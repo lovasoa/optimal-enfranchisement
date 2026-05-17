@@ -16,6 +16,7 @@ import argparse
 from dataclasses import dataclass
 from fractions import Fraction
 from itertools import combinations
+from math import gcd, lcm
 from typing import Callable, Iterable
 
 try:
@@ -149,6 +150,60 @@ def integer_weight_search(
     return best
 
 
+def rationalized_lp_candidate(
+    stakes: tuple[int, ...],
+    probabilities: list[float],
+    margin_coefficients: Callable[[tuple[int, ...], State], list[int]],
+    label: str,
+    max_denominator: int,
+) -> WeightedCandidate | None:
+    """Convert a numerical LP solution into exact integer weights."""
+    states = all_states(len(stakes))
+    support = [
+        (state, Fraction(probability).limit_denominator(max_denominator))
+        for state, probability in zip(states, probabilities)
+        if probability > 1e-8
+    ]
+    if not support:
+        return None
+
+    common_denominator = 1
+    for _, probability in support:
+        common_denominator = lcm(common_denominator, probability.denominator)
+
+    weights = [
+        probability.numerator * (common_denominator // probability.denominator)
+        for _, probability in support
+    ]
+    common_factor = 0
+    for weight in weights:
+        common_factor = gcd(common_factor, weight)
+    weights = [weight // common_factor for weight in weights]
+
+    weighted_support = tuple(
+        (state, weight)
+        for (state, _), weight in zip(support, weights)
+        if weight > 0
+    )
+    coefficient_rows = [
+        margin_coefficients(stakes, state)
+        for state, _ in weighted_support
+    ]
+    scaled_margin = min(
+        sum(weight * row[index] for (_, weight), row in zip(weighted_support, coefficient_rows))
+        for index in range(len(coefficient_rows[0]))
+    )
+    if scaled_margin <= 0:
+        return None
+
+    return WeightedCandidate(
+        stakes=stakes,
+        support=weighted_support,
+        margin=Fraction(scaled_margin, sum(weights)),
+        label=label,
+    )
+
+
 def positive_weight_vectors(length: int, max_total_weight: int) -> Iterable[tuple[int, ...]]:
     """Generate positive integer vectors with bounded total weight."""
     if length <= 0:
@@ -179,6 +234,8 @@ def find_small_dictatorship_examples(
     max_stake: int,
     max_support: int,
     max_total_weight: int,
+    rational_denominator: int,
+    refine_integer_weights: bool,
 ) -> list[WeightedCandidate]:
     """Search for simple dictatorship counterexamples with small N and stakes."""
     candidates: list[WeightedCandidate] = []
@@ -195,15 +252,26 @@ def find_small_dictatorship_examples(
             if len(support) > max_support:
                 continue
 
-            candidate = integer_weight_search(
+            candidate = rationalized_lp_candidate(
                 stakes,
-                support,
+                probabilities,
                 dictatorship_margin_coefficients,
-                max_total_weight=max_total_weight,
                 label=f"dictatorship n={n}",
+                max_denominator=rational_denominator,
             )
             if candidate is not None:
                 candidates.append(candidate)
+
+            if refine_integer_weights:
+                candidate = integer_weight_search(
+                    stakes,
+                    support,
+                    dictatorship_margin_coefficients,
+                    max_total_weight=max_total_weight,
+                    label=f"dictatorship n={n}",
+                )
+                if candidate is not None:
+                    candidates.append(candidate)
 
     return sorted(candidates, key=lambda candidate: (len(candidate.stakes), len(candidate.support), candidate.total_weight, -candidate.margin))
 
@@ -269,6 +337,8 @@ def find_small_non_high_stake_examples(
     max_stake: int,
     max_support: int,
     max_total_weight: int,
+    rational_denominator: int,
+    refine_integer_weights: bool,
 ) -> list[WeightedCandidate]:
     """Search exact small-support examples where the optimum is not high-stake."""
     candidates: list[WeightedCandidate] = []
@@ -290,22 +360,35 @@ def find_small_non_high_stake_examples(
                 if len(support) > max_support:
                     continue
 
-                candidate = integer_weight_search(
+                candidate = rationalized_lp_candidate(
                     stakes,
-                    support,
+                    probabilities,
                     high_stake_margin_coefficients(stakes, target),
-                    max_total_weight=max_total_weight,
                     label=f"non-high-stake target={format_franchise(target)}",
+                    max_denominator=rational_denominator,
                 )
-                if candidate is None:
-                    continue
-
-                distribution = normalize_weighted_states(candidate.support)
-                values = welfare_table(stakes, distribution)
-                if unique_argmax(values) == target:
+                if candidate is not None and verifies_target(candidate, target):
                     candidates.append(candidate)
 
+                if refine_integer_weights:
+                    candidate = integer_weight_search(
+                        stakes,
+                        support,
+                        high_stake_margin_coefficients(stakes, target),
+                        max_total_weight=max_total_weight,
+                        label=f"non-high-stake target={format_franchise(target)}",
+                    )
+                    if candidate is not None and verifies_target(candidate, target):
+                        candidates.append(candidate)
+
     return sorted(candidates, key=lambda candidate: (len(candidate.stakes), len(candidate.support), candidate.total_weight, -candidate.margin))
+
+
+def verifies_target(candidate: WeightedCandidate, target: tuple[int, ...]) -> bool:
+    """Check that a candidate has the requested unique optimum."""
+    distribution = normalize_weighted_states(candidate.support)
+    values = welfare_table(candidate.stakes, distribution)
+    return unique_argmax(values) == target
 
 
 def print_candidate(candidate: WeightedCandidate) -> None:
@@ -366,7 +449,18 @@ def parse_args() -> argparse.Namespace:
         "--max-total-weight",
         type=int,
         default=50,
-        help="largest total integer support weight to try",
+        help="largest total integer support weight to try during refinement",
+    )
+    parser.add_argument(
+        "--rational-denominator",
+        type=int,
+        default=200,
+        help="largest denominator for rationalizing LP probabilities",
+    )
+    parser.add_argument(
+        "--refine-integer-weights",
+        action="store_true",
+        help="also brute-force small integer weights on each LP support",
     )
     parser.add_argument(
         "--top",
@@ -387,6 +481,8 @@ def main() -> None:
             max_stake=args.max_stake,
             max_support=args.max_support,
             max_total_weight=args.max_total_weight,
+            rational_denominator=args.rational_denominator,
+            refine_integer_weights=args.refine_integer_weights,
         )
 
         print("Small dictatorship candidates")
@@ -399,6 +495,8 @@ def main() -> None:
             max_stake=args.max_stake,
             max_support=args.max_support,
             max_total_weight=args.max_total_weight,
+            rational_denominator=args.rational_denominator,
+            refine_integer_weights=args.refine_integer_weights,
         )
 
         print("Small non-high-stake candidates")
