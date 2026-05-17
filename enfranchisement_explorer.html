@@ -5,23 +5,24 @@
 <title>Optimal Enfranchisement Explorer</title>
 <style>
 :root {
-  --bg: #f7f4ec;
-  --card-bg: #fffdf7;
-  --border: #e6dfc8;
-  --border-strong: #d4cbac;
-  --text: #2a2a2a;
-  --muted: #6b6357;
-  --primary: #2c5282;
-  --primary-soft: #4a73a4;
-  --accent: #c05621;
-  --success: #2f855a;
-  --warning: #b7791f;
-  --danger: #c53030;
-  --gold: #d69e2e;
-  --soft-blue: #ebf2fa;
-  --soft-green: #ebf5ed;
-  --soft-orange: #fdf1e5;
-  --soft-red: #fdecec;
+  --bg: #f6f8fb;
+  --card-bg: #ffffff;
+  --border: #d9e1ea;
+  --border-strong: #aebbc9;
+  --text: #1f2933;
+  --muted: #657282;
+  --primary: #1d4f91;
+  --primary-soft: #5b8fca;
+  --accent: #c46a22;
+  --success: #25815f;
+  --warning: #c57b1e;
+  --danger: #c43b3b;
+  --gold: #d39a25;
+  --soft-blue: #eaf2fc;
+  --soft-green: #e8f5ef;
+  --soft-orange: #fff1df;
+  --soft-red: #fdebec;
+  --soft-gray: #f1f4f8;
 }
 
 * { box-sizing: border-box; }
@@ -33,10 +34,7 @@ html, body {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
-  background:
-    radial-gradient(at 0% 0%, #f0ecdf 0%, transparent 50%),
-    radial-gradient(at 100% 100%, #eee7d3 0%, transparent 50%),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
   line-height: 1.45;
   font-size: 14px;
@@ -98,12 +96,10 @@ header h1 {
 .card {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px;
+  border-radius: 8px;
+  padding: 16px;
   margin-bottom: 16px;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.6) inset,
-    0 1px 3px rgba(60, 50, 30, 0.05);
+  box-shadow: 0 1px 2px rgba(31, 41, 51, 0.05);
 }
 
 .card h2 {
@@ -129,6 +125,18 @@ header h1 {
   font-size: 12px;
   margin: -4px 0 12px;
   line-height: 1.45;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary-soft);
+  outline-offset: 2px;
+}
+
+.tip {
+  border-bottom: 1px dotted currentColor;
+  cursor: help;
 }
 
 /* Presets */
@@ -161,11 +169,20 @@ header h1 {
   border-color: var(--primary);
   box-shadow: 0 1px 4px rgba(44, 82, 130, 0.3);
 }
+.preset-note {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--primary);
+  background: var(--soft-blue);
+  color: var(--text);
+  font-size: 12px;
+  border-radius: 5px;
+}
 
 /* Stakes */
 .stake-row {
   display: grid;
-  grid-template-columns: 38px 1fr 54px;
+  grid-template-columns: 58px 1fr 54px;
   align-items: center;
   gap: 10px;
   margin-bottom: 8px;
@@ -174,25 +191,38 @@ header h1 {
   font-size: 14px;
   color: var(--muted);
   font-family: "SF Mono", Consolas, monospace;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.stake-row .rank {
+  color: var(--muted);
+  background: var(--soft-gray);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 9px;
+  line-height: 1;
+  padding: 2px 4px;
 }
 .stake-row .value {
   font-family: "SF Mono", Consolas, monospace;
   font-size: 12px;
   color: var(--text);
   text-align: right;
-  background: #f8f4e7;
+  background: var(--soft-gray);
   padding: 2px 6px;
   border-radius: 3px;
 }
 .stake-row.rank-best .label { color: var(--primary); font-weight: 700; }
 .stake-row.rank-best .value { background: var(--soft-blue); color: var(--primary); }
+.stake-row.rank-best .rank { background: var(--primary); border-color: var(--primary); color: #fff; }
 
 input[type=range] {
   width: 100%;
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
-  background: linear-gradient(to right, #d4cbac 0%, #e8e0c5 100%);
+  background: linear-gradient(to right, #b7c4d3 0%, #d8e0ea 100%);
   border-radius: 3px;
   outline: none;
   margin: 0;
@@ -349,14 +379,69 @@ input[type=range]::-moz-range-thumb {
   background: var(--soft-blue);
 }
 
+/* Research workflow */
+.workflow-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.small-button {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 7px 8px;
+}
+.small-button:hover {
+  border-color: var(--primary-soft);
+  background: var(--soft-blue);
+  color: var(--primary);
+}
+.state-box {
+  width: 100%;
+  min-height: 72px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 11px;
+  color: var(--text);
+}
+.seed-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  margin-top: 8px;
+}
+.seed-row input {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 8px;
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 12px;
+}
+.workflow-status {
+  color: var(--muted);
+  font-size: 11px;
+  min-height: 16px;
+  margin-top: 6px;
+}
+
 /* Welfare chart */
 #ranking-chart svg { display: block; width: 100%; height: auto; }
 
-.bar-row .bar-bg { fill: #f5efd9; }
-.bar-row .bar-high { fill: var(--success); transition: width 0.15s; }
+.bar-row .bar-bg { fill: var(--soft-gray); }
+.bar-row .bar-strictHigh { fill: var(--success); transition: width 0.15s; }
+.bar-row .bar-weakHigh { fill: #5d9ec9; transition: width 0.15s; }
 .bar-row .bar-notHigh { fill: var(--warning); transition: width 0.15s; }
 .bar-row { cursor: pointer; }
-.bar-row:hover .bar-bg { fill: #f0e8c0; }
+.bar-row:hover .bar-bg { fill: #e4ebf3; }
 .bar-row.selected .bar-bg { fill: var(--soft-blue); }
 .bar-row text { font-family: "SF Mono", Consolas, monospace; font-size: 11px; fill: var(--text); pointer-events: none; }
 .bar-row .label { fill: var(--muted); }
@@ -398,6 +483,8 @@ input[type=range]::-moz-range-thumb {
 }
 .decomp-meta .badge.optimal { background: var(--gold); color: white; }
 .decomp-meta .badge.not-hs { background: var(--warning); color: white; }
+.decomp-meta .badge.strict-hs { background: var(--success); color: white; }
+.decomp-meta .badge.weak-hs { background: #5d9ec9; color: white; }
 .decomp-table {
   width: 100%;
   border-collapse: collapse;
@@ -418,8 +505,10 @@ input[type=range]::-moz-range-thumb {
 }
 .decomp-table td.left, .decomp-table th.left { text-align: left; }
 .decomp-table tr.insider td { background: var(--soft-green); }
-.decomp-table tr.total td { background: #fbf6e3; font-weight: 700; }
+.decomp-table tr.total td { background: var(--soft-gray); font-weight: 700; }
 .decomp-table .num { font-family: "SF Mono", Consolas, monospace; }
+.decomp-table .delta-pos { color: var(--success); }
+.decomp-table .delta-neg { color: var(--danger); }
 
 /* Insights */
 .insight {
@@ -442,7 +531,127 @@ input[type=range]::-moz-range-thumb {
 .insight.info strong { color: var(--primary); }
 .insight .num { font-family: "SF Mono", Consolas, monospace; }
 
+/* Diagnostics */
+.diagnostics-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 16px;
+  align-items: start;
+}
+.table-scroll {
+  overflow: auto;
+  max-height: 360px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.diagnostic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.diagnostic-table th,
+.diagnostic-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 5px 7px;
+  text-align: right;
+  white-space: nowrap;
+}
+.diagnostic-table th {
+  background: var(--soft-gray);
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  position: sticky;
+  text-transform: uppercase;
+  top: 0;
+  z-index: 1;
+}
+.diagnostic-table td.left,
+.diagnostic-table th.left { text-align: left; }
+.diagnostic-table tr.total td {
+  background: var(--soft-gray);
+  font-weight: 700;
+  position: sticky;
+  bottom: 0;
+}
+.bits-inline {
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+}
+.bits-inline span {
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  display: inline-flex;
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 10px;
+  height: 18px;
+  justify-content: center;
+  width: 18px;
+}
+.bits-inline .one {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.num {
+  font-family: "SF Mono", Consolas, monospace;
+}
+.delta-pos { color: var(--success); }
+.delta-neg { color: var(--danger); }
+.swap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.swap-table th,
+.swap-table td {
+  border: 1px solid var(--border);
+  padding: 7px 8px;
+  text-align: right;
+}
+.swap-table th {
+  background: var(--soft-gray);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+.swap-table td {
+  font-family: "SF Mono", Consolas, monospace;
+}
+.swap-table td.swap-positive { background: var(--soft-green); color: var(--success); }
+.swap-table td.swap-negative { background: var(--soft-red); color: var(--danger); }
+.swap-table td.swap-counterintuitive {
+  box-shadow: inset 0 0 0 2px var(--accent);
+  font-weight: 700;
+}
+
 /* Phase diagram */
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.segmented button {
+  background: white;
+  border: 0;
+  border-right: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 11px;
+}
+.segmented button:last-child { border-right: 0; }
+.segmented button.active {
+  background: var(--primary);
+  color: white;
+}
 .phase-wrap {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 260px;
@@ -518,6 +727,13 @@ input[type=range]::-moz-range-thumb {
   margin-top: 1px;
 }
 
+.phase-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
 footer {
   text-align: center;
   color: var(--muted);
@@ -529,7 +745,18 @@ footer {
 @media (max-width: 1000px) {
   .layout { grid-template-columns: 1fr; }
   .results-grid { grid-template-columns: 1fr; }
+  .diagnostics-grid { grid-template-columns: 1fr; }
   .phase-wrap { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  body { padding: 16px; }
+  .workflow-actions,
+  .seed-row,
+  .preset-grid { grid-template-columns: 1fr; }
+  .segmented { display: flex; flex-direction: column; }
+  .segmented button { border-right: 0; border-bottom: 1px solid var(--border); }
+  .segmented button:last-child { border-bottom: 0; }
 }
 </style>
 </head>
@@ -548,6 +775,23 @@ footer {
     <section class="card">
       <h2>Presets</h2>
       <div class="preset-grid" id="presets"></div>
+      <div class="preset-note" id="preset-note" style="display:none;"></div>
+    </section>
+
+    <section class="card">
+      <h2>Research workflow</h2>
+      <div class="workflow-actions">
+        <button class="small-button" id="copy-json">Copy state JSON</button>
+        <button class="small-button" id="load-json">Load state JSON</button>
+        <button class="small-button" id="copy-hash">Copy URL hash</button>
+        <button class="small-button" id="clear-hash">Clear hash</button>
+      </div>
+      <textarea class="state-box" id="state-json" spellcheck="false" placeholder="State JSON"></textarea>
+      <div class="seed-row">
+        <input id="random-seed" value="counterexample-lab" aria-label="Random correlated seed">
+        <button class="small-button" id="random-correlated">Random correlated</button>
+      </div>
+      <div class="workflow-status" id="workflow-status"></div>
     </section>
 
     <section class="card">
@@ -580,7 +824,7 @@ footer {
         <button class="add-atom" id="add-atom">+ add outcome</button>
         <div class="dist-control" style="margin-top: 14px;">
           <div class="label-row"><span>Uniform noise (full-support mix)</span><span class="value" id="noise-val">0.000</span></div>
-          <input type="range" id="noise-slider" min="0" max="0.5" step="0.001" value="0.0001">
+          <input type="range" id="noise-slider" min="0" max="1" step="0.001" value="0.0001">
         </div>
       </div>
     </section>
@@ -591,10 +835,11 @@ footer {
       <h2>Expected welfare across all 16 odd franchises <span class="meta">click/hover a bar for per-agent details</span></h2>
       <div id="ranking-chart"></div>
       <div class="legend">
-        <span><span class="swatch" style="background: var(--success);"></span>high-stake franchise</span>
-        <span><span class="swatch" style="background: var(--warning);"></span>not high-stake</span>
+        <span title="Every insider has strictly higher stake than every outsider."><span class="swatch" style="background: var(--success);"></span>strict high-stake</span>
+        <span title="Every insider has at least as much stake as every outsider, with at least one tie."><span class="swatch" style="background: #5d9ec9;"></span>weak high-stake</span>
+        <span title="Some outsider has higher stake than an insider."><span class="swatch" style="background: var(--warning);"></span>not high-stake</span>
         <span><span class="swatch" style="background: var(--gold); box-shadow: 0 0 0 2px var(--gold);"></span>optimal</span>
-        <span style="color: var(--accent);">— — best constant dictatorship</span>
+        <span style="color: var(--accent);" title="Best constant rule q=0 or q=1, independent of opinions.">— — best constant dictatorship</span>
       </div>
     </section>
 
@@ -615,19 +860,40 @@ footer {
 </div>
 
 <section class="card">
-  <h2>Phase diagram <span class="meta">symmetric model · current stakes</span></h2>
-  <p class="hint">For every (p, ρ) in the symmetric model, this colours by whether the conjectures hold under the current stakes. Drag inside to set (p, ρ); the marker shows your current symmetric setting.</p>
+  <h2>Failure diagnostics</h2>
+  <div class="diagnostics-grid">
+    <section>
+      <h2>Scenario contributions <span class="meta" id="scenario-meta"></span></h2>
+      <div class="table-scroll">
+        <table class="diagnostic-table" id="scenario-table"></table>
+      </div>
+    </section>
+    <section>
+      <h2>Swap diagnostic <span class="meta" id="swap-meta"></span></h2>
+      <div id="swap-matrix"></div>
+    </section>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Phase diagram <span class="meta" id="phase-meta">counterexample sweeps</span></h2>
+  <div class="segmented" id="phase-family" role="group" aria-label="Phase family">
+    <button data-phase="dictatorship" class="active">Dictatorship failure</button>
+    <button data-phase="highstake">High-stake failure</button>
+    <button data-phase="symmetric">Symmetric slice</button>
+  </div>
+  <p class="hint" id="phase-hint">Sweep from balanced iid to the CE1 sparse distribution, with uniform noise on the vertical axis. Drag inside to load a cell into the explorer.</p>
   <div class="phase-wrap">
     <div style="position: relative;">
       <div id="phase-canvas-wrap">
         <canvas id="phase-canvas" width="240" height="240"></canvas>
         <div class="phase-marker" id="phase-marker"></div>
-        <div class="phase-axis" style="left: 0; bottom: -18px;">p=0</div>
-        <div class="phase-axis" style="right: 0; bottom: -18px;">p=1</div>
-        <div class="phase-axis" style="left: -22px; bottom: -4px;">0</div>
-        <div class="phase-axis" style="left: -22px; top: -4px;">1</div>
-        <div class="phase-label" style="bottom: -36px; left: 50%; transform: translateX(-50%);">p (marginal)</div>
-        <div class="phase-label" style="left: -52px; top: 50%; transform: rotate(-90deg) translateX(50%); transform-origin: 0 0;">ρ (correlation)</div>
+        <div class="phase-axis" id="phase-x-min" style="left: 0; bottom: -18px;">0</div>
+        <div class="phase-axis" id="phase-x-max" style="right: 0; bottom: -18px;">1</div>
+        <div class="phase-axis" id="phase-y-min" style="left: -38px; bottom: -4px;">0</div>
+        <div class="phase-axis" id="phase-y-max" style="left: -38px; top: -4px;">0.001</div>
+        <div class="phase-label" id="phase-x-label" style="bottom: -36px; left: 50%; transform: translateX(-50%);">mixture toward CE1</div>
+        <div class="phase-label" id="phase-y-label" style="left: -62px; top: 50%; transform: rotate(-90deg) translateX(50%); transform-origin: 0 0;">uniform noise ε</div>
       </div>
     </div>
     <div class="phase-legend">
@@ -637,16 +903,17 @@ footer {
       </div>
       <div class="phase-legend-item">
         <span class="swatch" style="background: rgb(245, 216, 160);"></span>
-        <span>C1 fails: dictatorship wins<em>some constant rule beats every franchise</em></span>
+        <span><span class="tip" title="C1: some majority franchise should weakly beat any constant dictatorship.">C1</span> fails: dictatorship wins<em>some constant rule beats every franchise</em></span>
       </div>
       <div class="phase-legend-item">
         <span class="swatch" style="background: rgb(240, 182, 194);"></span>
-        <span>C2 fails: optimum not high-stake<em>a lower-stake agent is included over a higher one</em></span>
+        <span><span class="tip" title="C2: an optimal franchise should be high-stake.">C2</span> fails: optimum not high-stake<em>a lower-stake agent is included over a higher one</em></span>
       </div>
       <div class="phase-legend-item">
         <span class="swatch" style="background: rgb(192, 133, 147);"></span>
         <span>Both fail</span>
       </div>
+      <div class="phase-note" id="phase-note"></div>
     </div>
   </div>
 </section>
@@ -686,6 +953,7 @@ for (let mask = 1; mask < NUM_OUTCOMES; mask++) {
   }
 }
 FRANCHISES.sort((a, b) => a.size - b.size || a.mask - b.mask);
+const FRANCHISE_BY_MASK = new Map(FRANCHISES.map((f, idx) => [f.mask, idx]));
 
 // AGENT_MATCH[fIdx][x] = bitmask of agents whose opinion matches Y_C(x)
 const AGENT_MATCH = FRANCHISES.map((f) =>
@@ -750,6 +1018,34 @@ function successProb(probs, fIdx, agent) {
   return p;
 }
 
+function franchiseOutcome(fIdx, x) {
+  const f = FRANCHISES[fIdx];
+  const bits = OUTCOMES[x];
+  let s = 0;
+  for (const i of f.members) s += bits[i];
+  return s * 2 > f.size ? 1 : 0;
+}
+
+function ruleOutcome(rule, x) {
+  return rule.type === 'dictatorship' ? rule.q : franchiseOutcome(rule.fIdx, x);
+}
+
+function ruleContributionByState(rule, x, stakes = state.stakes) {
+  const y = ruleOutcome(rule, x);
+  const bits = OUTCOMES[x];
+  let value = 0;
+  for (let i = 0; i < N; i++) if (bits[i] === y) value += stakes[i];
+  return { outcome: y, welfare: value };
+}
+
+function successProbForRule(probs, rule, agent) {
+  if (rule.type === 'dictatorship') {
+    const p1 = marginal(probs, agent);
+    return rule.q === 1 ? p1 : 1 - p1;
+  }
+  return successProb(probs, rule.fIdx, agent);
+}
+
 function isHighStake(franchise, stakes) {
   const insiders = franchise.members;
   if (insiders.length === N) return true;
@@ -758,6 +1054,19 @@ function isHighStake(franchise, stakes) {
     for (let j = 0; j < N; j++) {
       if (inSet.has(j)) continue;
       if (stakes[i] < stakes[j]) return false;
+    }
+  }
+  return true;
+}
+
+function isStrictHighStake(franchise, stakes) {
+  const insiders = franchise.members;
+  if (insiders.length === N) return true;
+  const inSet = new Set(insiders);
+  for (const i of insiders) {
+    for (let j = 0; j < N; j++) {
+      if (inSet.has(j)) continue;
+      if (stakes[i] <= stakes[j]) return false;
     }
   }
   return true;
@@ -807,6 +1116,28 @@ function customDist(atoms, noise) {
   return probs;
 }
 
+function atomsToSparseProbs(atoms) {
+  const probs = new Float64Array(NUM_OUTCOMES);
+  let totalWeight = 0;
+  for (const a of atoms) totalWeight += a.weight;
+  if (totalWeight <= 0) return probs;
+  for (const a of atoms) {
+    let x = 0;
+    for (let i = 0; i < N; i++) if (a.bits[i]) x |= (1 << i);
+    probs[x] += a.weight / totalWeight;
+  }
+  return probs;
+}
+
+function probsToAtoms(probs, scale = 1000) {
+  const atoms = [];
+  for (let x = 0; x < NUM_OUTCOMES; x++) {
+    if (probs[x] <= 1e-12) continue;
+    atoms.push({ bits: [...OUTCOMES[x]], weight: probs[x] * scale });
+  }
+  return atoms;
+}
+
 function currentProbs() {
   if (state.distMode === 'symmetric') {
     return symmetricDist(state.symmetric.p, state.symmetric.rho);
@@ -814,36 +1145,130 @@ function currentProbs() {
   return customDist(state.custom.atoms, state.custom.noise);
 }
 
+const EPS = 1e-9;
+
+function computeResults(probs, stakes) {
+  recomputeStakeSum(stakes);
+  return FRANCHISES.map((f, fIdx) => ({
+    f,
+    fIdx,
+    welfare: welfare(probs, fIdx),
+    highStake: isHighStake(f, stakes),
+    strictHighStake: isStrictHighStake(f, stakes)
+  }));
+}
+
+function bestHighStakeFranchise(results) {
+  return results
+    .filter(r => r.highStake)
+    .sort((a, b) => b.welfare - a.welfare || a.f.size - b.f.size || a.f.mask - b.f.mask)[0] || null;
+}
+
+function bestRunnerUp(results, selectedFIdx) {
+  return results
+    .filter(r => r.fIdx !== selectedFIdx)
+    .sort((a, b) => b.welfare - a.welfare || a.f.size - b.f.size || a.f.mask - b.f.mask)[0] || null;
+}
+
+function analyze(probs = currentProbs(), stakes = state.stakes) {
+  const results = computeResults(probs, stakes);
+  const sorted = [...results].sort((a, b) => b.welfare - a.welfare || a.f.size - b.f.size || a.f.mask - b.f.mask);
+  const opt = sorted[0];
+  const bd = bestDictatorship(probs, stakes);
+  const bestHs = bestHighStakeFranchise(results);
+  return {
+    probs,
+    stakes,
+    results,
+    sorted,
+    opt,
+    bd,
+    bestHs,
+    c1Fails: bd.welfare > opt.welfare + EPS,
+    c2Fails: !opt.highStake
+  };
+}
+
+function ruleWelfare(probs, rule, stakes = state.stakes) {
+  if (rule.type === 'dictatorship') return dictatorshipWelfare(probs, stakes, rule.q);
+  recomputeStakeSum(stakes);
+  return welfare(probs, rule.fIdx);
+}
+
+function ruleLabel(rule) {
+  if (!rule) return 'none';
+  if (rule.type === 'dictatorship') return `q=${rule.q}`;
+  return fmtMembers(FRANCHISES[rule.fIdx].members);
+}
+
+function activeComparison(analysis = analyze()) {
+  const selectedFIdx = state.hoveredFranchise ?? state.selectedFranchise ?? analysis.opt.fIdx;
+  const selectedRule = { type: 'franchise', fIdx: selectedFIdx };
+  let reason;
+  let comparator;
+
+  if (analysis.c1Fails) {
+    comparator = { type: 'dictatorship', q: analysis.bd.q };
+    reason = 'C1 failure';
+  } else if (analysis.c2Fails && analysis.bestHs) {
+    comparator = { type: 'franchise', fIdx: analysis.bestHs.fIdx };
+    reason = 'C2 failure';
+  } else {
+    const runner = bestRunnerUp(analysis.results, selectedFIdx);
+    comparator = runner ? { type: 'franchise', fIdx: runner.fIdx } : null;
+    reason = 'runner-up';
+  }
+
+  if (comparator && comparator.type === 'franchise' && comparator.fIdx === selectedFIdx) {
+    const runner = bestRunnerUp(analysis.results, selectedFIdx);
+    comparator = runner ? { type: 'franchise', fIdx: runner.fIdx } : null;
+    reason = 'runner-up';
+  }
+
+  return {
+    selectedRule,
+    comparator,
+    reason,
+    selectedWelfare: ruleWelfare(analysis.probs, selectedRule, analysis.stakes),
+    comparatorWelfare: comparator ? ruleWelfare(analysis.probs, comparator, analysis.stakes) : 0
+  };
+}
+
 // ============================================================================
 // STATE & PRESETS
 // ============================================================================
 const PRESETS = {
   'iid-balanced': {
-    name: 'Balanced iid (p=½)',
+    name: 'Balanced iid',
+    note: 'Balanced independent opinions are the theorem-safe baseline: every franchise ties any constant dictatorship at half total stake or better.',
     stakes: [5, 4, 3, 2, 1],
     distMode: 'symmetric',
     symmetric: { p: 0.5, rho: 0 }
   },
   'iid-biased': {
-    name: 'Biased iid (p=0.9)',
+    name: 'Biased iid',
+    note: 'Bias toward one outcome stresses the dictatorship comparison, but iid opinions still keep optima high-stake.',
     stakes: [5, 4, 3, 2, 1],
     distMode: 'symmetric',
     symmetric: { p: 0.9, rho: 0 }
   },
   'correlated': {
-    name: 'Correlated (p=½, ρ=0.6)',
+    name: 'Symmetric correlated',
+    note: 'The exchangeable symmetric slice is deliberately safe: symmetry removes the proxy effects used by CE2.',
     stakes: [5, 4, 3, 2, 1],
     distMode: 'symmetric',
     symmetric: { p: 0.5, rho: 0.6 }
   },
   'equal-balanced': {
-    name: 'Equal stakes, p=½',
+    name: 'Equal stakes balanced',
+    note: 'Equal stakes make the high-stake distinction degenerate; this is useful for separating stake sorting from opinion structure.',
     stakes: [3, 3, 3, 3, 3],
     distMode: 'symmetric',
     symmetric: { p: 0.5, rho: 0 }
   },
   'ce1': {
-    name: 'CE 1 · dictatorship beats every franchise',
+    name: 'CE1',
+    note: 'CE1: bias/correlation let constant q=1 beat every franchise.',
     stakes: [17, 8, 7, 4, 1],
     distMode: 'custom',
     custom: {
@@ -863,7 +1288,8 @@ const PRESETS = {
     }
   },
   'ce2': {
-    name: 'CE 2 · optimum is NOT high-stake',
+    name: 'CE2',
+    note: 'CE2: lower-stake insider works as a proxy for high-stake outsiders.',
     stakes: [5, 4, 3, 2, 1],
     distMode: 'custom',
     custom: {
@@ -874,6 +1300,38 @@ const PRESETS = {
       ],
       noise: 0.001
     }
+  }
+};
+
+const PHASE_MODES = {
+  dictatorship: {
+    label: 'Dictatorship failure',
+    meta: 'CE1 stakes · mixture/noise sweep',
+    hint: 'Sweep from balanced iid to the CE1 sparse distribution, with uniform noise on the vertical axis. Drag inside to load a cell into the explorer.',
+    note: 'This is the counterexample-relevant view for C1. The orange region marks where q=1 beats every majority franchise.',
+    preset: 'ce1',
+    xLabel: 'mixture toward CE1',
+    yLabel: 'uniform noise ε',
+    yMax: 0.001
+  },
+  highstake: {
+    label: 'High-stake failure',
+    meta: 'CE2 stakes · mixture/noise sweep',
+    hint: 'Sweep from balanced iid to the CE2 sparse distribution, with uniform noise on the vertical axis. Drag inside to load a cell into the explorer.',
+    note: 'This isolates the C2 proxy effect: the non-high-stake optimum survives over a visible region near CE2.',
+    preset: 'ce2',
+    xLabel: 'mixture toward CE2',
+    yLabel: 'uniform noise ε',
+    yMax: 0.5
+  },
+  symmetric: {
+    label: 'Symmetric slice',
+    meta: 'symmetric model · current stakes',
+    hint: 'The original exchangeable (p, ρ) slice is labelled theorem-safe: it is expected to be mostly green. Drag inside to set (p, ρ).',
+    note: 'Green here is informative rather than a bug: the symmetry removes the asymmetric sparse structures that drive CE1 and CE2.',
+    xLabel: 'p (marginal)',
+    yLabel: 'ρ (correlation)',
+    yMax: 0.99
   }
 };
 
@@ -891,7 +1349,14 @@ const state = {
   },
   selectedFranchise: null,
   hoveredFranchise: null,
-  activePreset: 'iid-balanced'
+  activePreset: 'iid-balanced',
+  randomSeed: 'counterexample-lab',
+  phaseMode: 'dictatorship',
+  phasePoint: {
+    dictatorship: { x: 1, y: 0.1 },
+    highstake: { x: 1, y: 0.002 },
+    symmetric: { x: 0.5, y: 0 }
+  }
 };
 
 function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
@@ -905,6 +1370,15 @@ function applyPreset(key) {
   if (p.custom) state.custom = clone(p.custom);
   state.selectedFranchise = null;
   state.hoveredFranchise = null;
+  if (key === 'ce1') {
+    state.phaseMode = 'dictatorship';
+    state.phasePoint.dictatorship = { x: 1, y: p.custom.noise / PHASE_MODES.dictatorship.yMax };
+  } else if (key === 'ce2') {
+    state.phaseMode = 'highstake';
+    state.phasePoint.highstake = { x: 1, y: p.custom.noise / PHASE_MODES.highstake.yMax };
+  } else if (p.symmetric) {
+    state.phasePoint.symmetric = { x: p.symmetric.p, y: p.symmetric.rho / PHASE_MODES.symmetric.yMax };
+  }
   renderAll();
 }
 
@@ -928,6 +1402,19 @@ function renderPresets() {
     btn.onclick = () => applyPreset(key);
     el.appendChild(btn);
   }
+  renderPresetNote();
+}
+
+function renderPresetNote() {
+  const el = document.getElementById('preset-note');
+  const preset = state.activePreset ? PRESETS[state.activePreset] : null;
+  if (preset && preset.note) {
+    el.textContent = preset.note;
+    el.style.display = 'block';
+  } else {
+    el.textContent = '';
+    el.style.display = 'none';
+  }
 }
 
 function renderStakes() {
@@ -937,7 +1424,7 @@ function renderStakes() {
     const row = document.createElement('div');
     row.className = 'stake-row';
     row.innerHTML = `
-      <div class="label">Δ<sub>${i+1}</sub></div>
+      <div class="label">Δ<sub>${i+1}</sub><span class="rank"></span></div>
       <input type="range" min="0" max="25" step="0.1" value="${state.stakes[i]}">
       <div class="value">${state.stakes[i].toFixed(1)}</div>
     `;
@@ -958,8 +1445,10 @@ function renderStakes() {
 
 function updateStakeHighlights() {
   const maxStake = Math.max(...state.stakes);
+  const ranks = state.stakes.map(s => 1 + state.stakes.filter(t => t > s).length);
   document.querySelectorAll('#stakes-panel .stake-row').forEach((row, i) => {
     row.classList.toggle('rank-best', state.stakes[i] === maxStake && maxStake > 0);
+    row.querySelector('.rank').textContent = `#${ranks[i]}`;
   });
 }
 
@@ -1045,20 +1534,28 @@ function fmtMembers(members) {
   return '{' + members.map(m => m + 1).join(',') + '}';
 }
 
-function renderRanking() {
-  recomputeStakeSum(state.stakes);
-  const probs = currentProbs();
-  const data = FRANCHISES.map((f, fIdx) => ({
-    f, fIdx,
-    welfare: welfare(probs, fIdx),
-    highStake: isHighStake(f, state.stakes)
-  }));
-  const bd = bestDictatorship(probs, state.stakes);
-  const totalStake = state.stakes.reduce((a, b) => a + b, 0);
-  const maxWelfare = Math.max(...data.map(d => d.welfare), bd.w0, bd.w1, 0.0001);
+function fmtRule(rule) {
+  if (!rule) return 'none';
+  if (rule.type === 'dictatorship') return `dictatorship q=${rule.q}`;
+  return `C = ${fmtMembers(FRANCHISES[rule.fIdx].members)}`;
+}
 
-  data.sort((a, b) => b.welfare - a.welfare);
-  const optFIdx = data[0].fIdx;
+function bitsHtml(x) {
+  return '<span class="bits-inline">' + OUTCOMES[x].map(b => `<span class="${b ? 'one' : ''}">${b}</span>`).join('') + '</span>';
+}
+
+function deltaClass(value) {
+  if (value > 1e-9) return 'delta-pos';
+  if (value < -1e-9) return 'delta-neg';
+  return '';
+}
+
+function renderRanking() {
+  const analysis = analyze();
+  const data = analysis.sorted;
+  const bd = analysis.bd;
+  const maxWelfare = Math.max(...data.map(d => d.welfare), bd.w0, bd.w1, 0.0001);
+  const optFIdx = analysis.opt.fIdx;
 
   const rowH = 22;
   const labelW = 84;
@@ -1084,10 +1581,12 @@ function renderRanking() {
     const w = Math.max(0, d.welfare * scale);
     const isOpt = d.fIdx === optFIdx;
     const isSel = d.fIdx === selFIdx;
-    const colorClass = d.highStake ? 'bar-high' : 'bar-notHigh';
+    const colorClass = d.strictHighStake ? 'bar-strictHigh' : (d.highStake ? 'bar-weakHigh' : 'bar-notHigh');
+    const stakeKind = d.strictHighStake ? 'strict high-stake' : (d.highStake ? 'weak high-stake' : 'not high-stake');
     const cls = `bar-row ${isOpt ? 'optimal' : ''} ${isSel ? 'selected' : ''}`;
 
     out.push(`<g class="${cls}" data-fidx="${d.fIdx}">`);
+    out.push(`<title>${fmtMembers(d.f.members)} · ${stakeKind} · U=${d.welfare.toFixed(6)}</title>`);
     out.push(`<rect class="bar-bg" x="${pad.left}" y="${y}" width="${innerW}" height="${barH}" rx="2"></rect>`);
     out.push(`<rect class="${colorClass}" x="${pad.left}" y="${y}" width="${w}" height="${barH}" rx="2"></rect>`);
     if (isOpt) {
@@ -1106,7 +1605,7 @@ function renderRanking() {
     if (x > chartW - pad.right) return;
     const sw = isBest ? 2 : 1;
     const op = isBest ? 1 : 0.55;
-    out.push(`<line x1="${x}" y1="${pad.top - 4}" x2="${x}" y2="${chartH - pad.bottom + 2}" stroke="${accent}" stroke-width="${sw}" stroke-dasharray="5,3" opacity="${op}"></line>`);
+    out.push(`<line x1="${x}" y1="${pad.top - 4}" x2="${x}" y2="${chartH - pad.bottom + 2}" stroke="${accent}" stroke-width="${sw}" stroke-dasharray="5,3" opacity="${op}"><title>Constant dictatorship q=${q}, welfare ${w.toFixed(6)}</title></line>`);
     out.push(`<text x="${x + 4}" y="${yLabel}" fill="${accent}" font-size="10" font-family="monospace" font-weight="${isBest ? 700 : 400}" opacity="${op}">q=${q}: ${w.toFixed(2)}</text>`);
   }
   dictLine(bd.w0, 0, bd.q === 0, 12);
@@ -1123,72 +1622,74 @@ function renderRanking() {
     g.onmouseenter = () => {
       state.hoveredFranchise = fIdx;
       renderDecomp();
+      renderDiagnostics();
     };
     g.onmouseleave = () => {
       state.hoveredFranchise = null;
       renderDecomp();
+      renderDiagnostics();
     };
     g.onclick = () => {
       state.selectedFranchise = (fIdx === state.selectedFranchise) ? null : fIdx;
       renderRanking();
       renderDecomp();
+      renderDiagnostics();
     };
   });
 }
 
 function renderDecomp() {
-  recomputeStakeSum(state.stakes);
-  const probs = currentProbs();
-  let bestW = -Infinity, optFIdx = 0;
-  for (let f = 0; f < FRANCHISES.length; f++) {
-    const w = welfare(probs, f);
-    if (w > bestW) { bestW = w; optFIdx = f; }
-  }
-
-  const fIdx = state.hoveredFranchise ?? state.selectedFranchise ?? optFIdx;
+  const analysis = analyze();
+  const probs = analysis.probs;
+  const comparison = activeComparison(analysis);
+  const fIdx = comparison.selectedRule.fIdx;
   const f = FRANCHISES[fIdx];
-  const isOpt = fIdx === optFIdx;
+  const isOpt = fIdx === analysis.opt.fIdx;
   const isHs = isHighStake(f, state.stakes);
+  const isStrict = isStrictHighStake(f, state.stakes);
 
   const badges =
     (isOpt ? '<span class="badge optimal">★ optimal</span>' : '') +
-    (!isHs ? '<span class="badge not-hs">not high-stake</span>' : '');
+    (isStrict ? '<span class="badge strict-hs" title="Every insider has strictly higher stake than every outsider.">strict high-stake</span>' :
+      isHs ? '<span class="badge weak-hs" title="Every insider has at least as much stake as every outsider.">weak high-stake</span>' :
+      '<span class="badge not-hs" title="Some outsider has higher stake than an insider.">not high-stake</span>');
   document.getElementById('decomp-franchise').innerHTML =
-    `C = ${fmtMembers(f.members)} ${badges}`;
+    `C = ${fmtMembers(f.members)} ${badges}<br><span>Δ vs ${fmtRule(comparison.comparator)} (${comparison.reason})</span>`;
 
   const table = document.getElementById('decomp-table');
   const inSet = new Set(f.members);
-  let html = '<thead><tr><th class="left">agent</th><th>in C?</th><th>Δᵢ</th><th>P[Xᵢ=Y_C]</th><th>Δᵢ·P</th></tr></thead><tbody>';
+  let html = '<thead><tr><th class="left">agent</th><th>in C?</th><th>Δᵢ</th><th>P[Xᵢ=Y]</th><th>Δᵢ·P</th><th>Δ vs comp.</th></tr></thead><tbody>';
   let total = 0;
+  let totalDelta = 0;
   for (let i = 0; i < N; i++) {
     const inC = inSet.has(i);
-    const p = successProb(probs, fIdx, i);
+    const p = successProbForRule(probs, comparison.selectedRule, i);
+    const cp = comparison.comparator ? successProbForRule(probs, comparison.comparator, i) : 0;
     const contrib = state.stakes[i] * p;
+    const delta = state.stakes[i] * (p - cp);
     total += contrib;
+    totalDelta += delta;
     html += `<tr class="${inC ? 'insider' : ''}">
       <td class="left">${i+1}</td>
       <td>${inC ? '✓' : '·'}</td>
       <td class="num">${state.stakes[i].toFixed(1)}</td>
       <td class="num">${p.toFixed(3)}</td>
       <td class="num">${contrib.toFixed(3)}</td>
+      <td class="num ${deltaClass(delta)}">${delta.toFixed(3)}</td>
     </tr>`;
   }
-  html += `<tr class="total"><td class="left" colspan="4">U(C)</td><td class="num">${total.toFixed(3)}</td></tr>`;
+  html += `<tr class="total"><td class="left" colspan="4">U(C)</td><td class="num">${total.toFixed(3)}</td><td class="num ${deltaClass(totalDelta)}">${totalDelta.toFixed(3)}</td></tr>`;
   html += '</tbody>';
   table.innerHTML = html;
 }
 
 function renderInsights() {
-  recomputeStakeSum(state.stakes);
-  const probs = currentProbs();
-  let bestW = -Infinity, optFIdx = 0;
-  for (let f = 0; f < FRANCHISES.length; f++) {
-    const w = welfare(probs, f);
-    if (w > bestW) { bestW = w; optFIdx = f; }
-  }
+  const analysis = analyze();
+  const bestW = analysis.opt.welfare;
+  const optFIdx = analysis.opt.fIdx;
   const opt = FRANCHISES[optFIdx];
   const optHs = isHighStake(opt, state.stakes);
-  const bd = bestDictatorship(probs, state.stakes);
+  const bd = analysis.bd;
   const totalStake = state.stakes.reduce((a, b) => a + b, 0);
 
   const out = [];
@@ -1200,7 +1701,7 @@ function renderInsights() {
 
   if (optHs) {
     out.push(`<div class="insight ok">
-      <strong>Conjecture 2 ✓</strong>
+      <strong><span class="tip" title="C2: an optimal franchise should be high-stake.">Conjecture 2</span> ✓</strong>
       Optimum is high-stake: every insider has stake ≥ every outsider.
     </div>`);
   } else {
@@ -1209,27 +1710,134 @@ function renderInsights() {
       ? ` Agent ${v.in+1} (Δ=<span class="num">${state.stakes[v.in].toFixed(1)}</span>) is in C*, but excluded agent ${v.out+1} (Δ=<span class="num">${state.stakes[v.out].toFixed(1)}</span>) has higher stake.`
       : '';
     out.push(`<div class="insight bad">
-      <strong>Conjecture 2 ✗ violated</strong>
+      <strong><span class="tip" title="C2: an optimal franchise should be high-stake.">Conjecture 2</span> ✗ violated</strong>
       Optimum is NOT high-stake.${vmsg}
     </div>`);
   }
 
-  const eps = 1e-9;
-  if (bestW >= bd.welfare - eps) {
+  if (!analysis.c1Fails) {
     const margin = bestW - bd.welfare;
     out.push(`<div class="insight ok">
-      <strong>Conjecture 1 ✓</strong>
+      <strong><span class="tip" title="C1: some majority franchise should weakly beat any constant dictatorship.">Conjecture 1</span> ✓</strong>
       Best franchise (<span class="num">${bestW.toFixed(3)}</span>) ≥ best constant dictatorship q=${bd.q} (<span class="num">${bd.welfare.toFixed(3)}</span>); margin <span class="num">${margin.toFixed(3)}</span>.
     </div>`);
   } else {
     const gap = bd.welfare - bestW;
     out.push(`<div class="insight bad">
-      <strong>Conjecture 1 ✗ violated</strong>
+      <strong><span class="tip" title="C1: some majority franchise should weakly beat any constant dictatorship.">Conjecture 1</span> ✗ violated</strong>
       Constant dictatorship q=${bd.q} (<span class="num">${bd.welfare.toFixed(3)}</span>) beats every franchise; best franchise loses by <span class="num">${gap.toFixed(3)}</span>.
     </div>`);
   }
 
+  const preset = state.activePreset ? PRESETS[state.activePreset] : null;
+  if (preset && (state.activePreset === 'ce1' || state.activePreset === 'ce2')) {
+    out.push(`<div class="insight info"><strong>Why this preset matters</strong>${preset.note}</div>`);
+  }
+
   document.getElementById('insights').innerHTML = out.join('');
+}
+
+function renderScenarioContributions() {
+  const analysis = analyze();
+  const comparison = activeComparison(analysis);
+  const selected = comparison.selectedRule;
+  const comparator = comparison.comparator;
+  const table = document.getElementById('scenario-table');
+
+  document.getElementById('scenario-meta').textContent =
+    `${fmtRule(selected)} vs ${fmtRule(comparator)} · ${comparison.reason}`;
+
+  const rows = [];
+  let pTotal = 0;
+  let selectedTotal = 0;
+  let comparatorTotal = 0;
+  let diffTotal = 0;
+
+  for (let x = 0; x < NUM_OUTCOMES; x++) {
+    const p = analysis.probs[x];
+    const s = ruleContributionByState(selected, x, analysis.stakes);
+    const c = comparator ? ruleContributionByState(comparator, x, analysis.stakes) : { outcome: null, welfare: 0 };
+    const sContrib = p * s.welfare;
+    const cContrib = p * c.welfare;
+    const diff = sContrib - cContrib;
+    pTotal += p;
+    selectedTotal += sContrib;
+    comparatorTotal += cContrib;
+    diffTotal += diff;
+    rows.push({ x, p, selectedOutcome: s.outcome, sContrib, cContrib, diff });
+  }
+
+  rows.sort((a, b) => b.p - a.p || a.x - b.x);
+
+  let html = '<thead><tr><th class="left">profile</th><th>Pr.</th><th>Y</th><th>selected</th><th>comp.</th><th>diff.</th></tr></thead><tbody>';
+  for (const r of rows) {
+    html += `<tr>
+      <td class="left">${bitsHtml(r.x)}</td>
+      <td class="num">${r.p.toFixed(5)}</td>
+      <td class="num">${r.selectedOutcome}</td>
+      <td class="num">${r.sContrib.toFixed(4)}</td>
+      <td class="num">${r.cContrib.toFixed(4)}</td>
+      <td class="num ${deltaClass(r.diff)}">${r.diff.toFixed(4)}</td>
+    </tr>`;
+  }
+  html += `<tr class="total">
+    <td class="left">total</td>
+    <td class="num">${pTotal.toFixed(5)}</td>
+    <td></td>
+    <td class="num">${selectedTotal.toFixed(4)}</td>
+    <td class="num">${comparatorTotal.toFixed(4)}</td>
+    <td class="num ${deltaClass(diffTotal)}">${diffTotal.toFixed(4)}</td>
+  </tr>`;
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function renderSwapDiagnostic() {
+  const analysis = analyze();
+  const comparison = activeComparison(analysis);
+  const fIdx = comparison.selectedRule.fIdx;
+  const f = FRANCHISES[fIdx];
+  const inSet = new Set(f.members);
+  const outsiders = [];
+  for (let i = 0; i < N; i++) if (!inSet.has(i)) outsiders.push(i);
+  const root = document.getElementById('swap-matrix');
+  document.getElementById('swap-meta').textContent = `for ${fmtMembers(f.members)}`;
+
+  if (outsiders.length === 0) {
+    root.innerHTML = '<p class="hint">Whole-population franchise: no outsider swaps are available.</p>';
+    return;
+  }
+
+  const base = ruleWelfare(analysis.probs, { type: 'franchise', fIdx }, analysis.stakes);
+  let html = '<table class="swap-table"><thead><tr><th>out \\ in</th>';
+  for (const j of outsiders) {
+    html += `<th title="Outsider agent ${j + 1}, Δ=${analysis.stakes[j].toFixed(1)}">+${j + 1}<br><span class="num">Δ${analysis.stakes[j].toFixed(1)}</span></th>`;
+  }
+  html += '</tr></thead><tbody>';
+
+  for (const i of f.members) {
+    html += `<tr><th title="Insider agent ${i + 1}, Δ=${analysis.stakes[i].toFixed(1)}">-${i + 1}<br><span class="num">Δ${analysis.stakes[i].toFixed(1)}</span></th>`;
+    for (const j of outsiders) {
+      const nextMask = (f.mask & ~(1 << i)) | (1 << j);
+      const nextFIdx = FRANCHISE_BY_MASK.get(nextMask);
+      const nextW = ruleWelfare(analysis.probs, { type: 'franchise', fIdx: nextFIdx }, analysis.stakes);
+      const diff = nextW - base;
+      const higherStakeOutsider = analysis.stakes[j] > analysis.stakes[i];
+      const cls = `${diff > EPS ? 'swap-positive' : diff < -EPS ? 'swap-negative' : ''} ${higherStakeOutsider && diff < -EPS ? 'swap-counterintuitive' : ''}`;
+      const title = higherStakeOutsider
+        ? `Higher-stake outsider ${j + 1} would ${diff < 0 ? 'reduce' : 'change'} welfare by ${diff.toFixed(6)}.`
+        : `Swap welfare change ${diff.toFixed(6)}.`;
+      html += `<td class="${cls}" title="${title}">${diff.toFixed(3)}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  root.innerHTML = html;
+}
+
+function renderDiagnostics() {
+  renderScenarioContributions();
+  renderSwapDiagnostic();
 }
 
 // ============================================================================
