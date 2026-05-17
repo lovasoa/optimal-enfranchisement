@@ -57,6 +57,12 @@ cover/
 
 # Django stuff:
 *.log
+
+# LaTeX intermediates
+*.aux
+*.out
+*.toc
+*.synctex.gz
 local_settings.py
 db.sqlite3
 db.sqlite3-journal

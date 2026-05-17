@@ -1,0 +1,351 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{array}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{parskip}
+\usepackage{setspace}
+
+\geometry{
+ a4paper,
+ left=35mm,
+ right=35mm,
+ top=30mm,
+}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\ind}{\mathbf{1}}
+
+\title{Optimal enfranchisement}
+\author{Ulysse Lojkine\footnote{ulysse.lojkine[at]sciencespo.fr, Sciences Po}}
+\date{May 2026}
+
+\onehalfspacing
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+A planner picks the franchise --- the subset of agents allowed to vote --- for a binary decision that affects different agents with different intensities.  We frame the planner's problem as maximizing expected stake-weighted agreement with the majority outcome, and study two natural questions: (i)~is some franchise always at least as good as the planner just picking the outcome herself, and (ii)~is the optimal franchise composed of the highest-stake agents?  Both answers are no in full generality, even when the joint opinion distribution has full support: we give two five-agent counterexamples.  Once opinions are independent and identically distributed both answers become yes, and under fair-coin opinions the optimal franchise reduces to a one-dimensional prefix rule.
+\end{abstract}
+
+\section{Introduction}
+
+Many collective decisions are binary --- admit a country, lift a curfew, ban a substance --- and bear unequally on the population.  A normative theory that takes preference intensity seriously must decide who should vote.  We give a stylized model of this trade-off and ask two natural questions:
+\begin{enumerate}
+    \item Is voting always at least as good as letting the planner pick an outcome ex ante?
+    \item Is the optimal franchise the one composed of the highest-stake agents?
+\end{enumerate}
+We show that, under full support of the joint opinion distribution alone, the answer to both questions is no.  Section~\ref{sec:negative} gives a five-agent example where every odd majority franchise is beaten by the constant rule $Y \equiv 1$, and a second five-agent example where the unique optimal franchise excludes a strictly higher-stake agent in favour of a lower-stake one.  Section~\ref{sec:positive} then identifies a clean restriction --- common iid opinions --- under which both questions get a positive answer, and derives a closed-form prefix rule when opinions are i.i.d.\ fair coins.
+
+\paragraph{Related literature.}
+The closest classical results are the Condorcet jury theorems \cite{condorcet-sep}, which give independence and competence conditions under which majority correctness rises with the size of a homogeneous jury.  The expert-voting literature \cite{nitzan-paroush, berend} solves for optimal weighted majority rules when voter competences are observed, with weights $\log(p_i/(1-p_i))$.  Schmitz and Tr\"oger \cite{schmitz-troger} study ex-ante utilitarian welfare for binary alternatives with uncertain preference intensities; their main message agrees with the one here --- symmetry and neutrality make majority attractive, independence restores strong optimality, and correlated utilities can make majority suboptimal.  The Penrose--Banzhaf voting-power tradition \cite{penrose, banzhaf} stresses that a voter's marginal influence is governed by the probability of a tie among the others, a central binomial coefficient; this is the same quantity that drives the insider advantage in our positive results.  For schemes that aggregate intensity directly rather than choosing a franchise, see Casella and Gelman \cite{casella-gelman}.
+
+\section{Model}\label{sec:model}
+
+A planner faces a population $\N = \{1, \ldots, N\}$ and a binary decision $\{0,1\}$.  From her vantage, agent $i$'s opinion is a Bernoulli random variable $X_i$.  The planner picks a \emph{franchise} $C \subseteq \N$ and the outcome is the strict majority within $C$:
+\[
+    Y_C = \ind_{\{S_C > |C|/2\}},
+    \qquad
+    S_C = \sum_{i \in C} X_i .
+\]
+Strict majority is unbiased only when $|C|$ is odd, so we assume throughout that $N$ is odd and consider only nonempty franchises of odd size.  Let $p(i, C) = P[X_i = Y_C]$.
+
+Each agent has utility $U(i, C)$ that depends on her own success.
+
+\begin{assumption}[Selfishness]\label{ass:selfish}
+Conditional on $\ind_{\{X_i = Y_C\}}$, agent $i$ is indifferent to the success of others and to anyone's inclusion in the franchise.
+\end{assumption}
+
+Under Assumption~\ref{ass:selfish}, $\E[U(i, C) \mid X_i = Y_C]$ and $\E[U(i, C) \mid X_i \neq Y_C]$ are constants in $C$.  Define
+\[
+    \Delta_i = \E[U(i, C) \mid X_i = Y_C] - \E[U(i, C) \mid X_i \neq Y_C] \geq 0,
+\]
+the agent's \emph{stake}.  Label agents so $\Delta_1 \geq \Delta_2 \geq \cdots \geq \Delta_N \geq 0$ and drop the constant terms from utility.  Aggregate expected welfare under franchise $C$ is
+\begin{equation}\label{eq:welfare}
+    U(C) = \sum_{i \in \N} \Delta_i\, p(i, C).
+\end{equation}
+
+\begin{assumption}[Full support]\label{ass:full-support}
+For every $x \in \{0,1\}^N$, $P[(X_1, \ldots, X_N) = x] > 0$.
+\end{assumption}
+
+For comparison we consider a \emph{planner's dictatorship}: an outcome $Z_q \sim \mathrm{Bernoulli}(q)$ independent of $(X_1, \ldots, X_N)$, giving welfare $V(q) = \sum_{i \in \N} \Delta_i\, P[X_i = Z_q]$.  The objective is linear in $q$, so the best dictatorship is either $q = 0$ or $q = 1$.
+
+\begin{definition}[High-stake franchise]\label{def:high-stake}
+$C \subseteq \N$ is \emph{high-stake} if $C = \N$ or $\Delta_i \geq \Delta_j$ for every $i \in C$ and every $j \in \N \setminus C$.
+\end{definition}
+
+\section{Two negative results}\label{sec:negative}
+
+\subsection{Dictatorship can beat every franchise}
+
+\begin{proposition}\label{prop:dict}
+There exist stakes $(\Delta_1, \ldots, \Delta_5)$ and a full-support distribution under which every odd franchise has strictly lower expected welfare than the dictatorship $q = 1$.
+\end{proposition}
+
+\begin{proof}
+Take $N = 5$ and $(\Delta_1, \ldots, \Delta_5) = (17, 8, 7, 4, 1)$.  Define $P_0$ on $\{0,1\}^5$ by the following ten atoms, with integer weights summing to $997$:
+\[
+\begin{array}{c|r@{\qquad}c|r}
+x & 997\, P_0[X = x] & x & 997\, P_0[X = x] \\
+\hline
+(1,1,1,1,0) & 864 & (1,0,0,1,0) & 3 \\
+(0,1,1,1,0) & 51  & (1,1,0,0,0) & 2 \\
+(1,0,1,1,0) & 49  & (1,0,1,1,1) & 1 \\
+(1,1,1,0,0) & 21  & (1,1,1,1,1) & 1 \\
+(1,1,0,1,0) & 4   & (1,0,1,0,0) & 1 .
+\end{array}
+\]
+The dictatorship $q = 1$ has welfare $34436/997$.  The welfares of all sixteen odd franchises, multiplied by $997$, are:
+\[
+\begin{array}{c|r@{\qquad}c|r}
+C & 997\, U_{P_0}(C) & C & 997\, U_{P_0}(C) \\
+\hline
+\{1\}         & 34385 & \{1,2,3\} & 34421 \\
+\{2\}         & 33458 & \{1,2,4\} & 34425 \\
+\{3\}         & 34311 & \{1,2,5\} & 33428 \\
+\{4\}         & 33832 & \{1,3,4\} & 34410 \\
+\{5\}         &  2511 & \{1,3,5\} & 34260 \\
+\{1,4,5\}     & 33781 & \{2,3,4\} & 34384 \\
+\{2,3,5\}     & 33369 & \{2,4,5\} & 32886 \\
+\{3,4,5\}     & 33733 & \{1,2,3,4,5\} & 34384 .
+\end{array}
+\]
+The best franchise is $\{1,2,4\}$ with welfare $34425/997$, so the dictatorship beats every franchise by at least $11/997$.
+
+Mix $P_0$ with the uniform distribution $R$ on $\{0,1\}^5$ to enforce full support:
+\[
+    P = \tfrac{9999}{10000}\, P_0 + \tfrac{1}{10000}\, R .
+\]
+Total stake is $37$, so replacing $P_0$ by $P$ can shrink any welfare gap by at most $37/10000$.  Since
+\[
+    \tfrac{9999}{10000}\cdot\tfrac{11}{997} \;-\; \tfrac{37}{10000}
+    \;=\; \tfrac{731}{99700} \;>\; 0,
+\]
+the dictatorship $q = 1$ still beats every franchise under the full-support distribution $P$.
+\end{proof}
+
+\subsection{Optimal franchises need not be high-stake}
+
+\begin{proposition}\label{prop:high-stake}
+There exist strictly decreasing stakes and a full-support distribution under which the unique optimal franchise is not high-stake.
+\end{proposition}
+
+\begin{proof}
+Take $N = 5$ and $(\Delta_1, \ldots, \Delta_5) = (5, 4, 3, 2, 1)$.  Define $P_0$ on three states:
+\[
+\begin{array}{c|c}
+x & P_0[X = x] \\
+\hline
+(0,1,1,1,0) & 10/22 \\
+(0,1,1,0,0) &  3/22 \\
+(0,0,1,1,1) &  9/22 .
+\end{array}
+\]
+Let $C^\star = \{1, 2, 4\}$.  The welfares $22\, U_{P_0}(C)$ across the sixteen odd franchises are:
+\[
+\begin{array}{c|r@{\qquad}c|r}
+C & 22\, U_{P_0}(C) & C & 22\, U_{P_0}(C) \\
+\hline
+\{1\}         & 165 & \{1,2,3\}     & 192 \\
+\{2\}         & 192 & \{1,2,4\}     & 195 \\
+\{3\}         & 165 & \{1,2,5\}     & 165 \\
+\{4\}         & 168 & \{1,3,4\}     & 168 \\
+\{5\}         & 138 & \{1,3,5\}     & 138 \\
+\{1,4,5\}     & 138 & \{2,3,4\}     & 165 \\
+\{2,3,5\}     & 165 & \{2,4,5\}     & 168 \\
+\{3,4,5\}     & 168 & \{1,2,3,4,5\} & 168 .
+\end{array}
+\]
+$C^\star$ is the unique maximizer, beating every other franchise by at least $3/22$.
+
+Mixing with the uniform $R$ on $\{0,1\}^5$,
+\[
+    P = \tfrac{999}{1000}\, P_0 + \tfrac{1}{1000}\, R ,
+\]
+gives full support.  Total stake is $15$, so for any other franchise $D$,
+\[
+    U_P(C^\star) - U_P(D) \;\geq\; \tfrac{999}{1000}\cdot\tfrac{3}{22} \;-\; \tfrac{1}{1000}\cdot 15 \;=\; \tfrac{2667}{22000} \;>\; 0,
+\]
+and $C^\star$ remains the unique optimum.  Because the stakes are strictly decreasing, the only high-stake franchises of odd size are $\{1\}$, $\{1,2,3\}$, and $\{1,2,3,4,5\}$.  Since $C^\star$ excludes agent $3$ (stake $3$) while including agent $4$ (stake $2$), $C^\star$ is not high-stake.
+\end{proof}
+
+\paragraph{Intuition.}
+In Proposition~\ref{prop:high-stake}, agent $3$'s opinion is constantly $1$ under $P_0$ and so conveys no information, while agent $4$'s opinion correlates with whether high-stake agent $1$'s preferred outcome is reachable.  Swapping voter $3$ for voter $4$ in the size-three franchise changes $Y$ in exactly the state $(0,1,1,0,0)$, flipping it from $1$ (pleasing stakes $4+3 = 7$) to $0$ (pleasing stakes $5+2+1 = 8$); the net gain $1 \times 3/22$ is the entire margin.  In Proposition~\ref{prop:dict}, the joint distribution is sharply biased towards $X_1 = 1$, and the constant dictator who sides with the very-high-stake agent $1$ outperforms any majority of a fluctuating subset.
+
+\section{Positive results under iid opinions}\label{sec:positive}
+
+The counterexamples exploit two features the literature has long flagged as the difficult cases: outcome asymmetry (used in Proposition~\ref{prop:dict}) and heterogeneous marginal opinions (used in Proposition~\ref{prop:high-stake}).  The next assumption removes both.
+
+\begin{assumption}[Common iid opinions]\label{ass:iid}
+There is $p \in (0, 1)$ such that $X_1, \ldots, X_N$ are independent Bernoulli random variables with common parameter $p$.
+\end{assumption}
+
+\begin{assumption}[Balanced iid opinions]\label{ass:balanced}
+Assumption~\ref{ass:iid} holds with $p = 1/2$.
+\end{assumption}
+
+Assumption~\ref{ass:iid} implies full support; Assumption~\ref{ass:balanced} adds neutrality between the two outcomes.
+
+\subsection{Insider advantage}
+
+\begin{lemma}[Insider advantage]\label{lem:insider}
+Under Assumption~\ref{ass:iid}, for every odd $m = 2h + 1$ there exist $\alpha_m, \beta_m \in (0, 1)$, depending only on $m$ and $p$, such that for every franchise $C$ of size $m$,
+\[
+    P[X_i = Y_C] \;=\;
+    \begin{cases}
+        \alpha_m & \text{if } i \in C, \\
+        \beta_m  & \text{if } i \notin C.
+    \end{cases}
+\]
+Moreover,
+\[
+    \alpha_m - \beta_m \;=\; 2\, p (1 - p)\, P[B_{m-1} = h] \;>\; 0,
+\]
+where $B_{m-1} \sim \mathrm{Binomial}(m-1, p)$.
+\end{lemma}
+
+\begin{proof}
+The first claim is iid symmetry.  For the difference: fix $i \in C$, let $T = \sum_{j \in C \setminus \{i\}} X_j \sim \mathrm{Binomial}(2h, p)$.  Agent $i$ agrees with the majority of $C$ iff $X_i = 1$ and $T \geq h$, or $X_i = 0$ and $T \leq h$, so
+\[
+    \alpha_m \;=\; p\, P[T \geq h] \;+\; (1 - p)\, P[T \leq h] .
+\]
+For an outsider $k \notin C$, set $S = \sum_{j \in C} X_j$.  Then
+\[
+    \beta_m \;=\; p\, P[S \geq h + 1] \;+\; (1 - p)\, P[S \leq h] .
+\]
+Writing $S = T + X_i$,
+\begin{align*}
+    P[S \geq h + 1] &\;=\; p\, P[T \geq h] + (1 - p)\, P[T \geq h + 1] , \\
+    P[S \leq h]     &\;=\; (1 - p)\, P[T \leq h] + p\, P[T \leq h - 1] .
+\end{align*}
+Set $c = P[T = h]$.  Then $P[T \geq h] - P[S \geq h + 1] = (1 - p)\, c$ and $P[T \leq h] - P[S \leq h] = p\, c$, so
+\[
+    \alpha_m - \beta_m
+    \;=\; p (1 - p)\, c \;+\; (1 - p)\, p\, c
+    \;=\; 2\, p (1 - p)\, c \;>\; 0 . \qedhere
+\]
+\end{proof}
+
+\subsection{High-stake optimality}
+
+\begin{theorem}\label{thm:iid-high-stake}
+Under Assumption~\ref{ass:iid}, every optimal franchise is high-stake.
+\end{theorem}
+
+\begin{proof}
+For fixed odd $m$, Lemma~\ref{lem:insider} gives
+\[
+    U(C) \;=\; \beta_m \sum_{i \in \N} \Delta_i \;+\; (\alpha_m - \beta_m) \sum_{i \in C} \Delta_i .
+\]
+The first term does not depend on $C$ and $\alpha_m - \beta_m > 0$, so among franchises of size $m$ welfare is maximized by enfranchising the $m$ highest-stake agents, up to ties.  Such franchises are high-stake.  The feasible odd sizes are finite, so a globally optimal size exists, and at that size the same fixed-size argument forces every optimum to be high-stake.
+\end{proof}
+
+\subsection{Voting beats dictatorship under balanced opinions}
+
+\begin{theorem}\label{thm:balanced-dict}
+Under Assumption~\ref{ass:balanced}, every odd franchise $C$ satisfies $U(C) \geq V(q)$ for every $q \in [0, 1]$, with strict inequality whenever $C$ contains a positive-stake agent.
+\end{theorem}
+
+\begin{proof}
+With $X_i \sim \mathrm{Bernoulli}(1/2)$ and $Z_q$ independent of all opinions, $P[X_i = Z_q] = 1/2$ for every $i$ and $q$, so every planner's dictatorship has welfare $V(q) = \tfrac{1}{2}\sum_{i \in \N} \Delta_i$.  For an odd franchise $C$ of size $m$, an outsider's vote is independent of $Y_C$, so $\beta_m = 1/2$.  Lemma~\ref{lem:insider} gives $\alpha_m > 1/2$, so
+\[
+    U(C) \;=\; \tfrac{1}{2}\sum_{i \in \N} \Delta_i \;+\; \bigl(\alpha_m - \tfrac{1}{2}\bigr) \sum_{i \in C} \Delta_i \;\geq\; \tfrac{1}{2}\sum_{i \in \N} \Delta_i \;=\; V(q) . \qedhere
+\]
+\end{proof}
+
+\subsection{A prefix rule for fair-coin opinions}
+
+For odd $m$, write
+\[
+    D_m \;=\; \sum_{i = 1}^m \Delta_i,
+    \qquad
+    a_m \;=\; \alpha_m - \tfrac{1}{2} \;=\; \frac{1}{2^m} \binom{m - 1}{(m - 1)/2} .
+\]
+
+\begin{theorem}\label{thm:prefix}
+Under Assumption~\ref{ass:balanced}, an optimal franchise is the prefix $C_m = \{1, \ldots, m\}$ for any odd $m$ that maximizes $a_m\, D_m$.
+\end{theorem}
+
+\begin{proof}
+By Theorem~\ref{thm:iid-high-stake}, for fixed odd $m$ an optimal franchise of size $m$ is the prefix $C_m$, up to ties.  Substituting $\beta_m = 1/2$ into the welfare formula from the proof of Theorem~\ref{thm:iid-high-stake} gives
+\[
+    U(C_m) \;=\; \tfrac{1}{2}\sum_{i \in \N} \Delta_i \;+\; a_m\, D_m .
+\]
+The first term is independent of $m$, so the optimal odd size maximizes $a_m\, D_m$.
+\end{proof}
+
+\begin{corollary}\label{cor:equal}
+Under Assumption~\ref{ass:balanced}, if $\Delta_i = \delta > 0$ for every $i$, the full franchise $\N$ is the unique optimum.
+\end{corollary}
+
+\begin{proof}
+With $\Delta_i = \delta$, the objective is $a_m D_m = \delta m\, a_m$.  Writing $m = 2r + 1$, the ratio at consecutive odd sizes is
+\[
+    \frac{(m + 2)\, a_{m + 2}}{m\, a_m}
+    \;=\; \frac{2r + 3}{2r + 2} \;>\; 1 .
+\]
+So $a_m D_m$ strictly increases in odd $m$, and the largest feasible odd size is $N$.
+\end{proof}
+
+\paragraph{Where the assumptions bite.}
+Theorem~\ref{thm:balanced-dict} needs balance: the dictatorship counterexample puts almost all mass on states with $X_1 = 1$, and dictating $q = 1$ exploits exactly that asymmetry.  The common-distribution part of Assumption~\ref{ass:iid} is what powers Theorem~\ref{thm:iid-high-stake}: when agents have heterogeneous marginals, an enfranchised low-stake agent may be valuable because her vote tracks high-stake outsiders, which is the force in the counterexample of Proposition~\ref{prop:high-stake}.  This is also why the expert-voting literature \cite{nitzan-paroush, berend} ranks voters by competence rather than by welfare stake.
+
+\begin{thebibliography}{9}
+
+\bibitem{condorcet-sep}
+Franz Dietrich and Kai Spiekermann.
+\newblock Jury Theorems.
+\newblock \emph{Stanford Encyclopedia of Philosophy}, 2021.
+\newblock \url{https://plato.stanford.edu/entries/jury-theorems/}.
+
+\bibitem{nitzan-paroush}
+Shmuel Nitzan and Jacob Paroush.
+\newblock Optimal decision rules in uncertain dichotomous choice situations.
+\newblock \emph{International Economic Review}, 23(2):289--297, 1982.
+
+\bibitem{berend}
+Daniel Berend, Luba Sapir, and Shmuel Sapir.
+\newblock Ranking of weighted majority rules.
+\newblock \emph{Journal of Applied Probability}, 45(4):994--1006, 2008.
+
+\bibitem{schmitz-troger}
+Patrick W.\ Schmitz and Thomas Tr\"oger.
+\newblock The (sub-)optimality of the majority rule.
+\newblock \emph{Games and Economic Behavior}, 74(2):651--665, 2012.
+
+\bibitem{penrose}
+L.\ S.\ Penrose.
+\newblock The elementary statistics of majority voting.
+\newblock \emph{Journal of the Royal Statistical Society}, 109:53--57, 1946.
+
+\bibitem{banzhaf}
+John F.\ Banzhaf III.
+\newblock Weighted voting doesn't work: a mathematical analysis.
+\newblock \emph{Rutgers Law Review}, 19:317--343, 1965.
+
+\bibitem{casella-gelman}
+Alessandra Casella and Andrew Gelman.
+\newblock A simple scheme to improve the efficiency of referenda.
+\newblock \emph{Journal of Public Economics}, 92(10--11):2240--2261, 2008.
+
+\end{thebibliography}
+
+\end{document}
