@@ -21,6 +21,12 @@ a one-dimensional prefix rule.
 - [`paper.pdf`](paper.pdf) — compiled with `lualatex paper.tex` (run twice
   for cross-references).
 
+## Visualization
+
+https://lovasoa.github.io/optimal-enfranchisement/enfranchisement_explorer.html
+
+<img width="2928" height="5940" alt="image" src="https://github.com/user-attachments/assets/6409c136-bf0e-4ae8-a41d-fe4a2f90630b" />
+
 ## Authors
 
 Claude Opus 4.7 and Codex GPT-5.5.
