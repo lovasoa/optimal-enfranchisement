@@ -12,6 +12,7 @@ Run with:
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 from fractions import Fraction
 from itertools import combinations
@@ -173,27 +174,32 @@ def dictatorship_margin_coefficients(stakes: tuple[int, ...], state: State) -> l
     ]
 
 
-def find_small_dictatorship_examples() -> list[WeightedCandidate]:
+def find_small_dictatorship_examples(
+    ns: tuple[int, ...],
+    max_stake: int,
+    max_support: int,
+    max_total_weight: int,
+) -> list[WeightedCandidate]:
     """Search for simple dictatorship counterexamples with small N and stakes."""
     candidates: list[WeightedCandidate] = []
-    states_by_n = {n: all_states(n) for n in (3, 5)}
+    states_by_n = {n: all_states(n) for n in ns}
 
-    for n in (3, 5):
-        for stakes in descending_stakes(n, max_stake=12):
+    for n in ns:
+        for stakes in descending_stakes(n, max_stake=max_stake):
             margin, probabilities = solve_dictatorship_lp(stakes)
             if margin <= 1e-7:
                 continue
 
             support_indices = lp_support(probabilities)
             support = tuple(states_by_n[n][index] for index in support_indices)
-            if len(support) > 5:
+            if len(support) > max_support:
                 continue
 
             candidate = integer_weight_search(
                 stakes,
                 support,
                 dictatorship_margin_coefficients,
-                max_total_weight=60,
+                max_total_weight=max_total_weight,
                 label=f"dictatorship n={n}",
             )
             if candidate is not None:
@@ -258,14 +264,19 @@ def solve_target_franchise_lp(
     return float(result.x[margin_index]), list(result.x[: len(states)])
 
 
-def find_small_non_high_stake_examples() -> list[WeightedCandidate]:
+def find_small_non_high_stake_examples(
+    ns: tuple[int, ...],
+    max_stake: int,
+    max_support: int,
+    max_total_weight: int,
+) -> list[WeightedCandidate]:
     """Search exact small-support examples where the optimum is not high-stake."""
     candidates: list[WeightedCandidate] = []
 
-    for n in (3, 5):
+    for n in ns:
         states = all_states(n)
         franchises = odd_franchises(n)
-        for stakes in descending_stakes(n, max_stake=8):
+        for stakes in descending_stakes(n, max_stake=max_stake):
             for target in franchises:
                 if is_high_stake(stakes, target):
                     continue
@@ -276,14 +287,14 @@ def find_small_non_high_stake_examples() -> list[WeightedCandidate]:
 
                 support_indices = lp_support(probabilities)
                 support = tuple(states[index] for index in support_indices)
-                if len(support) > 5:
+                if len(support) > max_support:
                     continue
 
                 candidate = integer_weight_search(
                     stakes,
                     support,
                     high_stake_margin_coefficients(stakes, target),
-                    max_total_weight=40,
+                    max_total_weight=max_total_weight,
                     label=f"non-high-stake target={format_franchise(target)}",
                 )
                 if candidate is None:
@@ -323,17 +334,76 @@ def print_candidate(candidate: WeightedCandidate) -> None:
     print()
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for scoped exploratory runs."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--problem",
+        choices=("all", "dictatorship", "non-high-stake"),
+        default="all",
+        help="which counterexample family to search",
+    )
+    parser.add_argument(
+        "--n",
+        type=int,
+        nargs="+",
+        default=[3, 5],
+        help="population sizes to search",
+    )
+    parser.add_argument(
+        "--max-stake",
+        type=int,
+        default=8,
+        help="largest integer stake allowed in descending stake vectors",
+    )
+    parser.add_argument(
+        "--max-support",
+        type=int,
+        default=5,
+        help="largest LP support to convert to exact integer weights",
+    )
+    parser.add_argument(
+        "--max-total-weight",
+        type=int,
+        default=50,
+        help="largest total integer support weight to try",
+    )
+    parser.add_argument(
+        "--top",
+        type=int,
+        default=10,
+        help="number of candidates to print for each search",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
-    dictatorship_candidates = find_small_dictatorship_examples()
-    non_high_stake_candidates = find_small_non_high_stake_examples()
+    args = parse_args()
+    ns = tuple(args.n)
 
-    print("Small dictatorship candidates")
-    for candidate in dictatorship_candidates[:10]:
-        print_candidate(candidate)
+    if args.problem in ("all", "dictatorship"):
+        dictatorship_candidates = find_small_dictatorship_examples(
+            ns,
+            max_stake=args.max_stake,
+            max_support=args.max_support,
+            max_total_weight=args.max_total_weight,
+        )
 
-    print("Small non-high-stake candidates")
-    for candidate in non_high_stake_candidates[:10]:
-        print_candidate(candidate)
+        print("Small dictatorship candidates")
+        for candidate in dictatorship_candidates[: args.top]:
+            print_candidate(candidate)
+
+    if args.problem in ("all", "non-high-stake"):
+        non_high_stake_candidates = find_small_non_high_stake_examples(
+            ns,
+            max_stake=args.max_stake,
+            max_support=args.max_support,
+            max_total_weight=args.max_total_weight,
+        )
+
+        print("Small non-high-stake candidates")
+        for candidate in non_high_stake_candidates[: args.top]:
+            print_candidate(candidate)
 
 
 if __name__ == "__main__":
