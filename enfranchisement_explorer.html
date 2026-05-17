@@ -685,7 +685,7 @@ input[type=range]::-moz-range-thumb {
   border: 2px solid white;
   box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.3);
   pointer-events: none;
-  transform: translate(-50%, 50%);
+  transform: translate(-50%, -50%);
   background: var(--primary);
 }
 .phase-axis {
@@ -1307,12 +1307,13 @@ const PHASE_MODES = {
   dictatorship: {
     label: 'Dictatorship failure',
     meta: 'CE1 stakes · mixture/noise sweep',
-    hint: 'Sweep from balanced iid to the CE1 sparse distribution, with uniform noise on the vertical axis. Drag inside to load a cell into the explorer; the marker shows the last loaded cell in this family.',
-    note: 'This is the counterexample-relevant view for C1. The orange region marks where q=1 beats every majority franchise.',
+    hint: 'Sweep from balanced iid to the CE1 sparse distribution, with uniform noise on the vertical axis. The horizontal scale expands the final approach to CE1 so the narrow failure band is visible.',
+    note: 'This is the counterexample-relevant view for C1. Non-green cells mark where the best constant rule beats every majority franchise; many are purple because C2 fails there too.',
     preset: 'ce1',
-    xLabel: 'mixture toward CE1',
+    xLabel: 'CE1 approach (balanced → CE1)',
     yLabel: 'uniform noise ε',
-    yMax: 0.001
+    yMax: 0.001,
+    focusPower: 5
   },
   highstake: {
     label: 'High-stake failure',
@@ -1328,7 +1329,7 @@ const PHASE_MODES = {
     label: 'Symmetric slice',
     meta: 'symmetric model · current stakes',
     hint: 'The original exchangeable (p, ρ) slice is labelled theorem-safe: it is expected to be mostly green. Drag inside to set (p, ρ); the marker follows the current symmetric setting.',
-    note: 'Green here is informative rather than a bug: the symmetry removes the asymmetric sparse structures that drive CE1 and CE2.',
+    note: 'This slice may be entirely green. That is the point of keeping it: the exchangeable symmetry removes the asymmetric sparse structures that drive CE1 and CE2.',
     xLabel: 'p (marginal)',
     yLabel: 'ρ (correlation)',
     yMax: 0.99
@@ -1389,14 +1390,16 @@ function makeFailureSweep(mode, xNorm, yNorm) {
   const preset = PRESETS[cfg.preset];
   const sparse = atomsToSparseProbs(preset.custom.atoms);
   const balanced = symmetricDist(0.5, 0);
-  const sparseMix = mixProbs(balanced, sparse, xNorm);
+  const blend = cfg.focusPower ? 1 - Math.pow(1 - clamp01(xNorm), cfg.focusPower) : clamp01(xNorm);
+  const sparseMix = mixProbs(balanced, sparse, blend);
   const noise = clamp01(yNorm) * cfg.yMax;
   const probs = mixProbs(sparseMix, uniformProbs(), noise);
   return {
     stakes: [...preset.stakes],
     probs,
     atoms: probsToAtoms(sparseMix, 1000),
-    noise
+    noise,
+    blend
   };
 }
 
@@ -2099,7 +2102,7 @@ function renderPhase() {
   const img = ctx.createImageData(W, H);
 
   for (let pi = 0; pi < PHASE_RES; pi++) {
-    const xNorm = (pi + 0.5) / PHASE_RES;
+    const xNorm = pi / (PHASE_RES - 1);
     for (let ri = 0; ri < PHASE_RES; ri++) {
       const yNorm = ri / (PHASE_RES - 1);
       const sweep = makeFailureSweep(mode, xNorm, yNorm);
