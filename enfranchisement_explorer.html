@@ -1307,7 +1307,7 @@ const PHASE_MODES = {
   dictatorship: {
     label: 'Dictatorship failure',
     meta: 'CE1 stakes · mixture/noise sweep',
-    hint: 'Sweep from balanced iid to the CE1 sparse distribution, with uniform noise on the vertical axis. Drag inside to load a cell into the explorer.',
+    hint: 'Sweep from balanced iid to the CE1 sparse distribution, with uniform noise on the vertical axis. Drag inside to load a cell into the explorer; the marker shows the last loaded cell in this family.',
     note: 'This is the counterexample-relevant view for C1. The orange region marks where q=1 beats every majority franchise.',
     preset: 'ce1',
     xLabel: 'mixture toward CE1',
@@ -1317,17 +1317,17 @@ const PHASE_MODES = {
   highstake: {
     label: 'High-stake failure',
     meta: 'CE2 stakes · mixture/noise sweep',
-    hint: 'Sweep from balanced iid to the CE2 sparse distribution, with uniform noise on the vertical axis. Drag inside to load a cell into the explorer.',
+    hint: 'Sweep from balanced iid to the CE2 sparse distribution, with uniform noise on the vertical axis. Drag inside to load a cell into the explorer; the marker shows the last loaded cell in this family.',
     note: 'This isolates the C2 proxy effect: the non-high-stake optimum survives over a visible region near CE2.',
     preset: 'ce2',
     xLabel: 'mixture toward CE2',
     yLabel: 'uniform noise ε',
-    yMax: 0.5
+    yMax: 0.05
   },
   symmetric: {
     label: 'Symmetric slice',
     meta: 'symmetric model · current stakes',
-    hint: 'The original exchangeable (p, ρ) slice is labelled theorem-safe: it is expected to be mostly green. Drag inside to set (p, ρ).',
+    hint: 'The original exchangeable (p, ρ) slice is labelled theorem-safe: it is expected to be mostly green. Drag inside to set (p, ρ); the marker follows the current symmetric setting.',
     note: 'Green here is informative rather than a bug: the symmetry removes the asymmetric sparse structures that drive CE1 and CE2.',
     xLabel: 'p (marginal)',
     yLabel: 'ρ (correlation)',
@@ -1354,12 +1354,51 @@ const state = {
   phaseMode: 'dictatorship',
   phasePoint: {
     dictatorship: { x: 1, y: 0.1 },
-    highstake: { x: 1, y: 0.002 },
+    highstake: { x: 1, y: 0.02 },
     symmetric: { x: 0.5, y: 0 }
   }
 };
 
 function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+function clamp01(value) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function uniformProbs() {
+  const probs = new Float64Array(NUM_OUTCOMES);
+  probs.fill(1 / NUM_OUTCOMES);
+  return probs;
+}
+
+function mixProbs(first, second, secondWeight) {
+  const t = clamp01(secondWeight);
+  const out = new Float64Array(NUM_OUTCOMES);
+  for (let x = 0; x < NUM_OUTCOMES; x++) out[x] = first[x] * (1 - t) + second[x] * t;
+  return out;
+}
+
+function makeFailureSweep(mode, xNorm, yNorm) {
+  if (mode === 'symmetric') {
+    const p = Math.max(0.01, Math.min(0.99, xNorm));
+    const rho = clamp01(yNorm) * PHASE_MODES.symmetric.yMax;
+    return { stakes: [...state.stakes], probs: symmetricDist(p, rho), p, rho };
+  }
+
+  const cfg = PHASE_MODES[mode];
+  const preset = PRESETS[cfg.preset];
+  const sparse = atomsToSparseProbs(preset.custom.atoms);
+  const balanced = symmetricDist(0.5, 0);
+  const sparseMix = mixProbs(balanced, sparse, xNorm);
+  const noise = clamp01(yNorm) * cfg.yMax;
+  const probs = mixProbs(sparseMix, uniformProbs(), noise);
+  return {
+    stakes: [...preset.stakes],
+    probs,
+    atoms: probsToAtoms(sparseMix, 1000),
+    noise
+  };
+}
 
 function applyPreset(key) {
   const p = PRESETS[key];
@@ -1379,14 +1418,39 @@ function applyPreset(key) {
   } else if (p.symmetric) {
     state.phasePoint.symmetric = { x: p.symmetric.p, y: p.symmetric.rho / PHASE_MODES.symmetric.yMax };
   }
-  renderAll();
+  renderAll({ phase: false });
 }
 
 function unsetPreset() {
   if (state.activePreset !== null) {
     state.activePreset = null;
     document.querySelectorAll('#presets button').forEach(b => b.classList.remove('active'));
+    renderPresetNote();
   }
+}
+
+function applyPhasePoint(mode, xNorm, yNorm) {
+  const x = clamp01(xNorm);
+  const y = clamp01(yNorm);
+  state.phaseMode = mode;
+  state.phasePoint[mode] = { x, y };
+  state.selectedFranchise = null;
+  state.hoveredFranchise = null;
+
+  if (mode === 'symmetric') {
+    const sweep = makeFailureSweep(mode, x, y);
+    state.distMode = 'symmetric';
+    state.symmetric = { p: sweep.p, rho: sweep.rho };
+    unsetPreset();
+  } else {
+    const sweep = makeFailureSweep(mode, x, y);
+    state.stakes = [...sweep.stakes];
+    state.distMode = 'custom';
+    state.custom = { atoms: sweep.atoms, noise: sweep.noise };
+    unsetPreset();
+  }
+
+  renderAll();
 }
 
 // ============================================================================
@@ -1840,6 +1904,161 @@ function renderDiagnostics() {
   renderSwapDiagnostic();
 }
 
+function selectedMaskForState() {
+  return state.selectedFranchise == null ? null : FRANCHISES[state.selectedFranchise].mask;
+}
+
+function serializableState() {
+  return {
+    stakes: state.stakes.map(v => +v),
+    distMode: state.distMode,
+    symmetric: { p: state.symmetric.p, rho: state.symmetric.rho },
+    custom: clone(state.custom),
+    selectedMask: selectedMaskForState(),
+    activePreset: state.activePreset,
+    randomSeed: state.randomSeed,
+    phaseMode: state.phaseMode,
+    phasePoint: clone(state.phasePoint)
+  };
+}
+
+function encodeStateToHash() {
+  return '#state=' + encodeURIComponent(JSON.stringify(serializableState()));
+}
+
+function decodeStateFromHash(hash = window.location.hash) {
+  if (!hash || !hash.startsWith('#state=')) return null;
+  try {
+    return JSON.parse(decodeURIComponent(hash.slice('#state='.length)));
+  } catch (err) {
+    return null;
+  }
+}
+
+function validNumberArray(value, length) {
+  return Array.isArray(value) && value.length === length && value.every(v => Number.isFinite(+v));
+}
+
+function sanitizeAtoms(atoms) {
+  if (!Array.isArray(atoms)) return null;
+  const clean = [];
+  for (const atom of atoms) {
+    if (!atom || !Array.isArray(atom.bits) || atom.bits.length !== N || !Number.isFinite(+atom.weight)) return null;
+    clean.push({
+      bits: atom.bits.map(b => b ? 1 : 0),
+      weight: Math.max(0, +atom.weight)
+    });
+  }
+  return clean;
+}
+
+function applyStateData(data, opts = { render: true }) {
+  if (!data || !validNumberArray(data.stakes, N)) throw new Error('State JSON must include five numeric stakes.');
+  state.stakes = data.stakes.map(v => Math.max(0, +v));
+
+  if (data.distMode === 'symmetric') {
+    const p = Number(data.symmetric && data.symmetric.p);
+    const rho = Number(data.symmetric && data.symmetric.rho);
+    if (!Number.isFinite(p) || !Number.isFinite(rho)) throw new Error('Symmetric state requires numeric p and rho.');
+    state.distMode = 'symmetric';
+    state.symmetric = { p: Math.max(0.01, Math.min(0.99, p)), rho: Math.max(0, Math.min(0.99, rho)) };
+  } else if (data.distMode === 'custom') {
+    const atoms = sanitizeAtoms(data.custom && data.custom.atoms);
+    const noise = Number(data.custom && data.custom.noise);
+    if (!atoms || !Number.isFinite(noise)) throw new Error('Custom state requires atoms and numeric noise.');
+    state.distMode = 'custom';
+    state.custom = { atoms, noise: Math.max(0, Math.min(1, noise)) };
+  } else {
+    throw new Error('State JSON must set distMode to "symmetric" or "custom".');
+  }
+
+  state.selectedFranchise = data.selectedMask == null ? null : (FRANCHISE_BY_MASK.get(+data.selectedMask) ?? null);
+  state.hoveredFranchise = null;
+  state.activePreset = typeof data.activePreset === 'string' && PRESETS[data.activePreset] ? data.activePreset : null;
+  state.randomSeed = typeof data.randomSeed === 'string' ? data.randomSeed : state.randomSeed;
+  state.phaseMode = data.phaseMode && PHASE_MODES[data.phaseMode] ? data.phaseMode : state.phaseMode;
+  if (data.phasePoint && typeof data.phasePoint === 'object') {
+    for (const mode of Object.keys(PHASE_MODES)) {
+      const point = data.phasePoint[mode];
+      if (point && Number.isFinite(+point.x) && Number.isFinite(+point.y)) {
+        state.phasePoint[mode] = { x: clamp01(+point.x), y: clamp01(+point.y) };
+      }
+    }
+  }
+
+  if (state.distMode === 'symmetric') {
+    state.phasePoint.symmetric = { x: state.symmetric.p, y: state.symmetric.rho / PHASE_MODES.symmetric.yMax };
+  }
+
+  if (opts.render) renderAll();
+}
+
+function setWorkflowStatus(message, isError = false) {
+  const el = document.getElementById('workflow-status');
+  el.textContent = message;
+  el.style.color = isError ? 'var(--danger)' : 'var(--muted)';
+}
+
+function renderWorkflow() {
+  const seed = document.getElementById('random-seed');
+  if (document.activeElement !== seed) seed.value = state.randomSeed;
+  const box = document.getElementById('state-json');
+  if (document.activeElement !== box) box.value = JSON.stringify(serializableState(), null, 2);
+}
+
+async function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const box = document.getElementById('state-json');
+  const old = box.value;
+  box.value = text;
+  box.focus();
+  box.select();
+  document.execCommand('copy');
+  box.value = old;
+}
+
+function hashSeed(seed) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function seededRng(seed) {
+  let a = hashSeed(seed) || 1;
+  return () => {
+    a += 0x6D2B79F5;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function randomCorrelatedAtoms(seed) {
+  const rng = seededRng(seed);
+  const atoms = [];
+  const centers = [];
+  for (let c = 0; c < 3; c++) {
+    const p = 0.18 + 0.64 * rng();
+    const bits = [];
+    for (let i = 0; i < N; i++) bits.push(rng() < p ? 1 : 0);
+    centers.push(bits);
+  }
+  for (let k = 0; k < 8; k++) {
+    const center = centers[Math.floor(rng() * centers.length)];
+    const flip = 0.04 + 0.22 * rng();
+    const bits = center.map(b => (rng() < flip ? 1 - b : b));
+    atoms.push({ bits, weight: 40 + Math.floor(960 * rng()) });
+  }
+  return atoms;
+}
+
 // ============================================================================
 // PHASE DIAGRAM
 // ============================================================================
@@ -1849,8 +2068,30 @@ canvas.width = PHASE_RES * 4;
 canvas.height = PHASE_RES * 4;
 const ctx = canvas.getContext('2d');
 
+function updatePhaseMarker() {
+  const marker = document.getElementById('phase-marker');
+  const point = state.phasePoint[state.phaseMode] || { x: 0, y: 0 };
+  marker.style.display = 'block';
+  marker.style.left = (clamp01(point.x) * 100) + '%';
+  marker.style.top = ((1 - clamp01(point.y)) * 100) + '%';
+}
+
 function renderPhase() {
-  recomputeStakeSum(state.stakes);
+  const mode = state.phaseMode;
+  const cfg = PHASE_MODES[mode];
+  document.getElementById('phase-meta').textContent = cfg.meta;
+  document.getElementById('phase-hint').textContent = cfg.hint;
+  document.getElementById('phase-note').textContent = cfg.note;
+  document.getElementById('phase-x-label').textContent = cfg.xLabel;
+  document.getElementById('phase-y-label').textContent = cfg.yLabel;
+  document.getElementById('phase-x-min').textContent = mode === 'symmetric' ? 'p=.01' : '0';
+  document.getElementById('phase-x-max').textContent = mode === 'symmetric' ? 'p=.99' : '1';
+  document.getElementById('phase-y-min').textContent = '0';
+  document.getElementById('phase-y-max').textContent = mode === 'symmetric' ? 'ρ=.99' : cfg.yMax.toString();
+  document.querySelectorAll('#phase-family button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.phase === mode);
+  });
+
   const W = canvas.width;
   const H = canvas.height;
   const cellW = W / PHASE_RES;
@@ -1858,23 +2099,16 @@ function renderPhase() {
   const img = ctx.createImageData(W, H);
 
   for (let pi = 0; pi < PHASE_RES; pi++) {
-    const p = (pi + 0.5) / PHASE_RES;
+    const xNorm = (pi + 0.5) / PHASE_RES;
     for (let ri = 0; ri < PHASE_RES; ri++) {
-      const rho = ri / (PHASE_RES - 1) * 0.99;
-      const probs = symmetricDist(p, rho);
-      let bestW = -Infinity, bestF = 0;
-      for (let f = 0; f < FRANCHISES.length; f++) {
-        const w = welfare(probs, f);
-        if (w > bestW) { bestW = w; bestF = f; }
-      }
-      const hs = isHighStake(FRANCHISES[bestF], state.stakes);
-      const bd = bestDictatorship(probs, state.stakes);
-      const beatsDict = bestW >= bd.welfare - 1e-9;
+      const yNorm = ri / (PHASE_RES - 1);
+      const sweep = makeFailureSweep(mode, xNorm, yNorm);
+      const analysis = analyze(sweep.probs, sweep.stakes);
       let color;
-      if (hs && beatsDict)      color = [182, 229, 194];
-      else if (hs && !beatsDict) color = [245, 216, 160];
-      else if (!hs && beatsDict) color = [240, 182, 194];
-      else                       color = [192, 133, 147];
+      if (!analysis.c1Fails && !analysis.c2Fails) color = [182, 229, 194];
+      else if (analysis.c1Fails && !analysis.c2Fails) color = [245, 216, 160];
+      else if (!analysis.c1Fails && analysis.c2Fails) color = [240, 182, 194];
+      else color = [192, 133, 147];
 
       const x0 = Math.floor(pi * cellW);
       const x1 = Math.floor((pi + 1) * cellW);
@@ -1893,15 +2127,7 @@ function renderPhase() {
   }
   ctx.putImageData(img, 0, 0);
 
-  // Marker for current symmetric point
-  const marker = document.getElementById('phase-marker');
-  if (state.distMode === 'symmetric') {
-    marker.style.display = 'block';
-    marker.style.left = (state.symmetric.p * 100) + '%';
-    marker.style.top = ((1 - state.symmetric.rho) * 100) + '%';
-  } else {
-    marker.style.display = 'none';
-  }
+  updatePhaseMarker();
 }
 
 function setupPhaseInteraction() {
@@ -1910,20 +2136,7 @@ function setupPhaseInteraction() {
     const rect = canvas.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     const y = Math.max(0, Math.min(1, 1 - (e.clientY - rect.top) / rect.height));
-    state.symmetric.p = Math.max(0.01, Math.min(0.99, x));
-    state.symmetric.rho = Math.max(0, Math.min(0.99, y));
-    if (state.distMode !== 'symmetric') {
-      state.distMode = 'symmetric';
-      renderTabs();
-    }
-    unsetPreset();
-    renderSymmetricDist();
-    renderResults();
-    // marker only
-    const marker = document.getElementById('phase-marker');
-    marker.style.display = 'block';
-    marker.style.left = (state.symmetric.p * 100) + '%';
-    marker.style.top = ((1 - state.symmetric.rho) * 100) + '%';
+    applyPhasePoint(state.phaseMode, x, y);
   }
   canvas.addEventListener('mousedown', (e) => { dragging = true; update(e); e.preventDefault(); });
   canvas.addEventListener('mousemove', (e) => { if (dragging) update(e); });
@@ -1937,42 +2150,59 @@ function renderResults() {
   renderRanking();
   renderDecomp();
   renderInsights();
+  renderDiagnostics();
+  renderWorkflow();
 }
 
-function renderAll() {
+function renderAll(options = { phase: true }) {
   renderPresets();
   syncStakeSliders();
   renderTabs();
   renderSymmetricDist();
   renderAtomsList();
   renderResults();
-  renderPhase();
+  if (options.phase) renderPhase();
+  else updatePhaseMarker();
+  renderWorkflow();
 }
 
 // ============================================================================
 // EVENT WIRING (one-time)
 // ============================================================================
+let loadedFromHash = false;
+const decodedInitialState = decodeStateFromHash();
+if (decodedInitialState) {
+  try {
+    applyStateData(decodedInitialState, { render: false });
+    loadedFromHash = true;
+  } catch (err) {
+    loadedFromHash = false;
+  }
+}
+
 renderStakes();
 
 document.getElementById('p-slider').oninput = (e) => {
   state.symmetric.p = parseFloat(e.target.value);
+  state.phasePoint.symmetric = { x: state.symmetric.p, y: state.symmetric.rho / PHASE_MODES.symmetric.yMax };
   document.getElementById('p-val').textContent = state.symmetric.p.toFixed(2);
   unsetPreset();
   renderResults();
   // marker
   const marker = document.getElementById('phase-marker');
-  if (state.distMode === 'symmetric') {
+  if (state.phaseMode === 'symmetric') {
     marker.style.left = (state.symmetric.p * 100) + '%';
     marker.style.top = ((1 - state.symmetric.rho) * 100) + '%';
   }
 };
 document.getElementById('rho-slider').oninput = (e) => {
   state.symmetric.rho = parseFloat(e.target.value);
+  state.phasePoint.symmetric = { x: state.symmetric.p, y: state.symmetric.rho / PHASE_MODES.symmetric.yMax };
   document.getElementById('rho-val').textContent = state.symmetric.rho.toFixed(2);
   unsetPreset();
   renderResults();
   const marker = document.getElementById('phase-marker');
-  if (state.distMode === 'symmetric') {
+  if (state.phaseMode === 'symmetric') {
     marker.style.left = (state.symmetric.p * 100) + '%';
     marker.style.top = ((1 - state.symmetric.rho) * 100) + '%';
   }
@@ -1998,9 +2228,79 @@ document.getElementById('add-atom').onclick = () => {
   renderAtomsList();
   renderResults();
 };
+document.querySelectorAll('#phase-family button').forEach(btn => {
+  btn.onclick = () => {
+    state.phaseMode = btn.dataset.phase;
+    if (state.phaseMode === 'symmetric' && state.distMode === 'symmetric') {
+      state.phasePoint.symmetric = { x: state.symmetric.p, y: state.symmetric.rho / PHASE_MODES.symmetric.yMax };
+    }
+    renderPhase();
+  };
+});
+document.getElementById('copy-json').onclick = async () => {
+  const json = JSON.stringify(serializableState(), null, 2);
+  document.getElementById('state-json').value = json;
+  try {
+    await copyText(json);
+    setWorkflowStatus('State JSON copied.');
+  } catch (err) {
+    setWorkflowStatus('Could not copy automatically; the JSON is in the text box.', true);
+  }
+};
+document.getElementById('load-json').onclick = () => {
+  try {
+    applyStateData(JSON.parse(document.getElementById('state-json').value));
+    setWorkflowStatus('State JSON loaded.');
+  } catch (err) {
+    setWorkflowStatus(err.message || 'Could not load state JSON.', true);
+  }
+};
+document.getElementById('copy-hash').onclick = async () => {
+  const hash = encodeStateToHash();
+  history.replaceState(null, '', hash);
+  try {
+    await copyText(hash);
+    setWorkflowStatus('URL hash copied and applied.');
+  } catch (err) {
+    setWorkflowStatus('Could not copy automatically; the hash is in the text box.', true);
+    document.getElementById('state-json').value = hash;
+  }
+};
+document.getElementById('clear-hash').onclick = () => {
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+  setWorkflowStatus('URL hash cleared.');
+};
+document.getElementById('random-correlated').onclick = () => {
+  const seed = document.getElementById('random-seed').value || 'counterexample-lab';
+  state.randomSeed = seed;
+  state.distMode = 'custom';
+  state.custom = { atoms: randomCorrelatedAtoms(seed), noise: 0.01 };
+  state.selectedFranchise = null;
+  state.hoveredFranchise = null;
+  unsetPreset();
+  renderAtomsList();
+  renderTabs();
+  renderResults();
+  setWorkflowStatus(`Random correlated distribution generated from seed "${seed}".`);
+};
+window.addEventListener('hashchange', () => {
+  const decoded = decodeStateFromHash();
+  if (!decoded) return;
+  try {
+    applyStateData(decoded);
+    setWorkflowStatus('Loaded state from URL hash.');
+  } catch (err) {
+    setWorkflowStatus(err.message || 'Could not load URL hash.', true);
+  }
+});
 setupPhaseInteraction();
 
-applyPreset('iid-balanced');
+if (loadedFromHash) {
+  renderAll();
+  setWorkflowStatus('Loaded state from URL hash.');
+} else {
+  applyPreset('iid-balanced');
+}
 </script>
 </body>
 </html>
