@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Optimal Enfranchisement Explorer</title>
+<style>
+:root {
+  --bg: #f7f4ec;
+  --card-bg: #fffdf7;
+  --border: #e6dfc8;
+  --border-strong: #d4cbac;
+  --text: #2a2a2a;
+  --muted: #6b6357;
+  --primary: #2c5282;
+  --primary-soft: #4a73a4;
+  --accent: #c05621;
+  --success: #2f855a;
+  --warning: #b7791f;
+  --danger: #c53030;
+  --gold: #d69e2e;
+  --soft-blue: #ebf2fa;
+  --soft-green: #ebf5ed;
+  --soft-orange: #fdf1e5;
+  --soft-red: #fdecec;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+  background:
+    radial-gradient(at 0% 0%, #f0ecdf 0%, transparent 50%),
+    radial-gradient(at 100% 100%, #eee7d3 0%, transparent 50%),
+    var(--bg);
+  color: var(--text);
+  line-height: 1.45;
+  font-size: 14px;
+  min-height: 100vh;
+  padding: 28px;
+}
+
+.container { max-width: 1480px; margin: 0 auto; }
+
+header {
+  margin-bottom: 22px;
+}
+
+header h1 {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  font-size: 30px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #1a2a4a;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin: 0 0 4px;
+  font-size: 14px;
+  max-width: 1100px;
+}
+
+.subtitle code {
+  background: rgba(0,0,0,0.04);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 0.92em;
+  color: #344;
+}
+
+.subtitle em {
+  color: var(--primary);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  align-items: start;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.6) inset,
+    0 1px 3px rgba(60, 50, 30, 0.05);
+}
+
+.card h2 {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.card h2 .meta {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+  margin-left: 8px;
+  font-size: 11px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+  margin: -4px 0 12px;
+  line-height: 1.45;
+}
+
+/* Presets */
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.preset-grid button {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: left;
+  color: var(--text);
+  font-family: inherit;
+  transition: all 0.12s;
+  line-height: 1.3;
+}
+.preset-grid button:hover {
+  background: var(--soft-blue);
+  border-color: var(--primary-soft);
+  color: var(--primary);
+}
+.preset-grid button.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 1px 4px rgba(44, 82, 130, 0.3);
+}
+
+/* Stakes */
+.stake-row {
+  display: grid;
+  grid-template-columns: 38px 1fr 54px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.stake-row .label {
+  font-size: 14px;
+  color: var(--muted);
+  font-family: "SF Mono", Consolas, monospace;
+}
+.stake-row .value {
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 12px;
+  color: var(--text);
+  text-align: right;
+  background: #f8f4e7;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.stake-row.rank-best .label { color: var(--primary); font-weight: 700; }
+.stake-row.rank-best .value { background: var(--soft-blue); color: var(--primary); }
+
+input[type=range] {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: linear-gradient(to right, #d4cbac 0%, #e8e0c5 100%);
+  border-radius: 3px;
+  outline: none;
+  margin: 0;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: transform 0.1s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+input[type=range]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  background: none;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-family: inherit;
+  font-weight: 500;
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 700;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Symmetric dist */
+.dist-control {
+  margin-bottom: 14px;
+}
+.dist-control:last-child { margin-bottom: 0; }
+.dist-control .label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.dist-control .value {
+  font-family: "SF Mono", Consolas, monospace;
+  color: var(--text);
+}
+
+/* Custom dist atoms */
+.atoms-list {
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  border: 1px solid #f0ead7;
+  border-radius: 5px;
+  padding: 4px;
+}
+.atom-row {
+  display: grid;
+  grid-template-columns: auto 1fr 38px 22px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-bottom: 1px solid #f4eedb;
+}
+.atom-row:last-child { border-bottom: none; }
+.atom-bits {
+  display: flex;
+  gap: 2px;
+}
+.atom-bit {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: white;
+  cursor: pointer;
+  font-size: 10px;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--muted);
+  transition: all 0.1s;
+}
+.atom-bit:hover { transform: scale(1.1); }
+.atom-bit.on {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  font-weight: 700;
+}
+.atom-row input[type=range] { height: 3px; }
+.atom-row .weight-val {
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 11px;
+  text-align: right;
+  color: var(--text);
+}
+.atom-row .remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 16px;
+  padding: 0;
+  line-height: 1;
+  border-radius: 3px;
+  width: 22px;
+  height: 22px;
+}
+.atom-row .remove:hover { color: var(--danger); background: var(--soft-red); }
+.add-atom {
+  background: none;
+  border: 1px dashed var(--border-strong);
+  color: var(--muted);
+  padding: 7px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 12px;
+  font-family: inherit;
+  transition: all 0.12s;
+}
+.add-atom:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--soft-blue);
+}
+
+/* Welfare chart */
+#ranking-chart svg { display: block; width: 100%; height: auto; }
+
+.bar-row .bar-bg { fill: #f5efd9; }
+.bar-row .bar-high { fill: var(--success); transition: width 0.15s; }
+.bar-row .bar-notHigh { fill: var(--warning); transition: width 0.15s; }
+.bar-row { cursor: pointer; }
+.bar-row:hover .bar-bg { fill: #f0e8c0; }
+.bar-row.selected .bar-bg { fill: var(--soft-blue); }
+.bar-row text { font-family: "SF Mono", Consolas, monospace; font-size: 11px; fill: var(--text); pointer-events: none; }
+.bar-row .label { fill: var(--muted); }
+.bar-row.optimal .label { fill: var(--gold); font-weight: 700; }
+.bar-row.selected .label { fill: var(--primary); font-weight: 700; }
+
+.legend {
+  display: flex;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.legend .swatch {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 4px;
+  vertical-align: -1px;
+  border-radius: 2px;
+}
+
+/* Decomposition */
+.decomp-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-family: "SF Mono", Consolas, monospace;
+}
+.decomp-meta .badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  margin-left: 4px;
+  font-family: -apple-system, sans-serif;
+}
+.decomp-meta .badge.optimal { background: var(--gold); color: white; }
+.decomp-meta .badge.not-hs { background: var(--warning); color: white; }
+.decomp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.decomp-table th, .decomp-table td {
+  padding: 5px 6px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+.decomp-table th {
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  border-bottom-color: var(--border-strong);
+}
+.decomp-table td.left, .decomp-table th.left { text-align: left; }
+.decomp-table tr.insider td { background: var(--soft-green); }
+.decomp-table tr.total td { background: #fbf6e3; font-weight: 700; }
+.decomp-table .num { font-family: "SF Mono", Consolas, monospace; }
+
+/* Insights */
+.insight {
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  border-left: 3px solid;
+  line-height: 1.4;
+}
+.insight:last-child { margin-bottom: 0; }
+.insight strong { display: block; margin-bottom: 3px; font-size: 12px; }
+.insight.ok { background: var(--soft-green); border-color: var(--success); }
+.insight.ok strong { color: var(--success); }
+.insight.warn { background: var(--soft-orange); border-color: var(--warning); }
+.insight.warn strong { color: var(--warning); }
+.insight.bad { background: var(--soft-red); border-color: var(--danger); }
+.insight.bad strong { color: var(--danger); }
+.insight.info { background: var(--soft-blue); border-color: var(--primary); }
+.insight.info strong { color: var(--primary); }
+.insight .num { font-family: "SF Mono", Consolas, monospace; }
+
+/* Phase diagram */
+.phase-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 32px;
+  align-items: center;
+  padding-left: 30px;
+  padding-bottom: 22px;
+}
+#phase-canvas-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 1;
+  margin: 0;
+}
+#phase-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 1px solid var(--border-strong);
+  background: white;
+  cursor: crosshair;
+  border-radius: 4px;
+  image-rendering: pixelated;
+}
+.phase-marker {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.3);
+  pointer-events: none;
+  transform: translate(-50%, 50%);
+  background: var(--primary);
+}
+.phase-axis {
+  position: absolute;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: "SF Mono", Consolas, monospace;
+}
+.phase-label {
+  position: absolute;
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.phase-legend {
+  font-size: 12px;
+  color: var(--text);
+}
+.phase-legend-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+.phase-legend-item .swatch {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 3px;
+  margin-top: 1px;
+}
+.phase-legend-item em {
+  display: block;
+  color: var(--muted);
+  font-style: italic;
+  font-size: 11px;
+  margin-top: 1px;
+}
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 32px;
+  padding: 16px;
+}
+
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; }
+  .results-grid { grid-template-columns: 1fr; }
+  .phase-wrap { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Optimal Enfranchisement Explorer</h1>
+  <p class="subtitle">A planner picks an odd-size subset of <code>N=5</code> agents; that subset votes by strict majority on a binary decision. Each agent <code>i</code> has stake <code>Δᵢ ≥ 0</code> and the planner maximises <code>E[Σ Δᵢ · 𝟙(Xᵢ = Y_C)]</code>.</p>
+  <p class="subtitle">Two natural conjectures: <em>(1)</em> some franchise dominates any constant-rule dictatorship; <em>(2)</em> the optimum is &ldquo;high-stake&rdquo; (insiders all weakly higher stake than outsiders). Both fail under full support alone. Play with the controls to find out when, and why.</p>
+</header>
+
+<div class="layout">
+
+  <aside>
+    <section class="card">
+      <h2>Presets</h2>
+      <div class="preset-grid" id="presets"></div>
+    </section>
+
+    <section class="card">
+      <h2>Stakes <span class="meta">Δᵢ for each agent</span></h2>
+      <div id="stakes-panel"></div>
+    </section>
+
+    <section class="card">
+      <h2>Joint distribution of opinions</h2>
+      <div class="tabs">
+        <button class="tab active" data-tab="symmetric">Symmetric</button>
+        <button class="tab" data-tab="custom">Custom mixture</button>
+      </div>
+
+      <div class="tab-content active" id="dist-symmetric">
+        <div class="dist-control">
+          <div class="label-row"><span>Marginal P[Xᵢ=1]&nbsp;&nbsp;(p)</span><span class="value" id="p-val">0.50</span></div>
+          <input type="range" id="p-slider" min="0.01" max="0.99" step="0.01" value="0.5">
+        </div>
+        <div class="dist-control">
+          <div class="label-row"><span>Pairwise correlation&nbsp;&nbsp;(ρ)</span><span class="value" id="rho-val">0.00</span></div>
+          <input type="range" id="rho-slider" min="0" max="0.99" step="0.01" value="0">
+        </div>
+        <p class="hint" style="margin: 12px 0 0;">Exchangeable model: with prob ρ all opinions equal one shared Bern(p) draw; otherwise iid Bern(p). Gives marginal p and pairwise correlation exactly ρ.</p>
+      </div>
+
+      <div class="tab-content" id="dist-custom">
+        <p class="hint">Each atom is a 5-bit opinion profile. Toggle bits, drag weight, or add/remove rows. Probabilities are weight/total, then mixed with uniform noise to ensure full support.</p>
+        <div class="atoms-list" id="atoms-list"></div>
+        <button class="add-atom" id="add-atom">+ add outcome</button>
+        <div class="dist-control" style="margin-top: 14px;">
+          <div class="label-row"><span>Uniform noise (full-support mix)</span><span class="value" id="noise-val">0.000</span></div>
+          <input type="range" id="noise-slider" min="0" max="0.5" step="0.001" value="0.0001">
+        </div>
+      </div>
+    </section>
+  </aside>
+
+  <main>
+    <section class="card">
+      <h2>Expected welfare across all 16 odd franchises <span class="meta">click/hover a bar for per-agent details</span></h2>
+      <div id="ranking-chart"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background: var(--success);"></span>high-stake franchise</span>
+        <span><span class="swatch" style="background: var(--warning);"></span>not high-stake</span>
+        <span><span class="swatch" style="background: var(--gold); box-shadow: 0 0 0 2px var(--gold);"></span>optimal</span>
+        <span style="color: var(--accent);">— — best constant dictatorship</span>
+      </div>
+    </section>
+
+    <div class="results-grid">
+      <section class="card">
+        <h2>Per-agent decomposition</h2>
+        <div class="decomp-meta" id="decomp-franchise"></div>
+        <table class="decomp-table" id="decomp-table"></table>
+      </section>
+
+      <section class="card">
+        <h2>Insights</h2>
+        <div id="insights"></div>
+      </section>
+    </div>
+  </main>
+
+</div>
+
+<section class="card">
+  <h2>Phase diagram <span class="meta">symmetric model · current stakes</span></h2>
+  <p class="hint">For every (p, ρ) in the symmetric model, this colours by whether the conjectures hold under the current stakes. Drag inside to set (p, ρ); the marker shows your current symmetric setting.</p>
+  <div class="phase-wrap">
+    <div style="position: relative;">
+      <div id="phase-canvas-wrap">
+        <canvas id="phase-canvas" width="240" height="240"></canvas>
+        <div class="phase-marker" id="phase-marker"></div>
+        <div class="phase-axis" style="left: 0; bottom: -18px;">p=0</div>
+        <div class="phase-axis" style="right: 0; bottom: -18px;">p=1</div>
+        <div class="phase-axis" style="left: -22px; bottom: -4px;">0</div>
+        <div class="phase-axis" style="left: -22px; top: -4px;">1</div>
+        <div class="phase-label" style="bottom: -36px; left: 50%; transform: translateX(-50%);">p (marginal)</div>
+        <div class="phase-label" style="left: -52px; top: 50%; transform: rotate(-90deg) translateX(50%); transform-origin: 0 0;">ρ (correlation)</div>
+      </div>
+    </div>
+    <div class="phase-legend">
+      <div class="phase-legend-item">
+        <span class="swatch" style="background: rgb(182, 229, 194);"></span>
+        <span>Both conjectures hold<em>optimum is high-stake and beats every constant dictatorship</em></span>
+      </div>
+      <div class="phase-legend-item">
+        <span class="swatch" style="background: rgb(245, 216, 160);"></span>
+        <span>C1 fails: dictatorship wins<em>some constant rule beats every franchise</em></span>
+      </div>
+      <div class="phase-legend-item">
+        <span class="swatch" style="background: rgb(240, 182, 194);"></span>
+        <span>C2 fails: optimum not high-stake<em>a lower-stake agent is included over a higher one</em></span>
+      </div>
+      <div class="phase-legend-item">
+        <span class="swatch" style="background: rgb(192, 133, 147);"></span>
+        <span>Both fail</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Single-file tool · exhaustive over all 2⁵ outcomes and 16 odd franchises · self-contained, works offline · view source for the math
+</footer>
+
+</div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// MATH
+// ============================================================================
+const N = 5;
+const NUM_OUTCOMES = 1 << N;
+
+// All outcomes as bit arrays (bit i is at index i, so OUTCOMES[x][i] = (x>>i)&1)
+const OUTCOMES = [];
+for (let x = 0; x < NUM_OUTCOMES; x++) {
+  const bits = [];
+  for (let i = 0; i < N; i++) bits.push((x >> i) & 1);
+  OUTCOMES.push(bits);
+}
+
+// All odd-size franchises, sorted by size then mask
+const FRANCHISES = [];
+for (let mask = 1; mask < NUM_OUTCOMES; mask++) {
+  let pop = 0;
+  for (let i = 0; i < N; i++) if (mask & (1 << i)) pop++;
+  if (pop % 2 === 1) {
+    const members = [];
+    for (let i = 0; i < N; i++) if (mask & (1 << i)) members.push(i);
+    FRANCHISES.push({ mask, members, size: pop });
+  }
+}
+FRANCHISES.sort((a, b) => a.size - b.size || a.mask - b.mask);
+
+// AGENT_MATCH[fIdx][x] = bitmask of agents whose opinion matches Y_C(x)
+const AGENT_MATCH = FRANCHISES.map((f) =>
+  OUTCOMES.map((bits) => {
+    let s = 0;
+    for (const i of f.members) s += bits[i];
+    const y = s * 2 > f.size ? 1 : 0;
+    let mask = 0;
+    for (let i = 0; i < N; i++) if (bits[i] === y) mask |= (1 << i);
+    return mask;
+  })
+);
+
+// stakeSum[fIdx][x] = sum of stakes for agents matching Y_C(x); cached given stakes
+let stakeSum;
+function recomputeStakeSum(stakes) {
+  stakeSum = FRANCHISES.map((f, fIdx) => {
+    const out = new Float64Array(NUM_OUTCOMES);
+    for (let x = 0; x < NUM_OUTCOMES; x++) {
+      const mask = AGENT_MATCH[fIdx][x];
+      let s = 0;
+      for (let i = 0; i < N; i++) if (mask & (1 << i)) s += stakes[i];
+      out[x] = s;
+    }
+    return out;
+  });
+}
+
+function welfare(probs, fIdx) {
+  let u = 0;
+  const ss = stakeSum[fIdx];
+  for (let x = 0; x < NUM_OUTCOMES; x++) u += probs[x] * ss[x];
+  return u;
+}
+
+function marginal(probs, i) {
+  let p = 0;
+  for (let x = 0; x < NUM_OUTCOMES; x++) if ((x >> i) & 1) p += probs[x];
+  return p;
+}
+
+function dictatorshipWelfare(probs, stakes, q) {
+  let u = 0;
+  for (let i = 0; i < N; i++) {
+    const p1 = marginal(probs, i);
+    u += stakes[i] * (q * p1 + (1 - q) * (1 - p1));
+  }
+  return u;
+}
+
+function bestDictatorship(probs, stakes) {
+  const w0 = dictatorshipWelfare(probs, stakes, 0);
+  const w1 = dictatorshipWelfare(probs, stakes, 1);
+  return w0 >= w1 ? { q: 0, welfare: w0, w0, w1 } : { q: 1, welfare: w1, w0, w1 };
+}
+
+function successProb(probs, fIdx, agent) {
+  let p = 0;
+  for (let x = 0; x < NUM_OUTCOMES; x++) {
+    if (AGENT_MATCH[fIdx][x] & (1 << agent)) p += probs[x];
+  }
+  return p;
+}
+
+function isHighStake(franchise, stakes) {
+  const insiders = franchise.members;
+  if (insiders.length === N) return true;
+  const inSet = new Set(insiders);
+  for (const i of insiders) {
+    for (let j = 0; j < N; j++) {
+      if (inSet.has(j)) continue;
+      if (stakes[i] < stakes[j]) return false;
+    }
+  }
+  return true;
+}
+
+function findHighStakeViolation(franchise, stakes) {
+  const insiders = franchise.members;
+  if (insiders.length === N) return null;
+  const inSet = new Set(insiders);
+  for (const i of insiders) {
+    for (let j = 0; j < N; j++) {
+      if (inSet.has(j)) continue;
+      if (stakes[i] < stakes[j]) return { in: i, out: j };
+    }
+  }
+  return null;
+}
+
+function symmetricDist(p, rho) {
+  const probs = new Float64Array(NUM_OUTCOMES);
+  for (let x = 0; x < NUM_OUTCOMES; x++) {
+    let k = 0;
+    for (let i = 0; i < N; i++) if ((x >> i) & 1) k++;
+    let pr = (1 - rho) * Math.pow(p, k) * Math.pow(1 - p, N - k);
+    if (k === 0) pr += rho * (1 - p);
+    if (k === N) pr += rho * p;
+    probs[x] = pr;
+  }
+  return probs;
+}
+
+function customDist(atoms, noise) {
+  const probs = new Float64Array(NUM_OUTCOMES);
+  let totalWeight = 0;
+  for (const a of atoms) totalWeight += a.weight;
+  let effectiveNoise = noise;
+  if (totalWeight <= 0) effectiveNoise = 1;
+  else {
+    for (const a of atoms) {
+      let x = 0;
+      for (let i = 0; i < N; i++) if (a.bits[i]) x |= (1 << i);
+      probs[x] += (a.weight / totalWeight) * (1 - noise);
+    }
+  }
+  const u = effectiveNoise / NUM_OUTCOMES;
+  for (let x = 0; x < NUM_OUTCOMES; x++) probs[x] += u;
+  return probs;
+}
+
+function currentProbs() {
+  if (state.distMode === 'symmetric') {
+    return symmetricDist(state.symmetric.p, state.symmetric.rho);
+  }
+  return customDist(state.custom.atoms, state.custom.noise);
+}
+
+// ============================================================================
+// STATE & PRESETS
+// ============================================================================
+const PRESETS = {
+  'iid-balanced': {
+    name: 'Balanced iid (p=½)',
+    stakes: [5, 4, 3, 2, 1],
+    distMode: 'symmetric',
+    symmetric: { p: 0.5, rho: 0 }
+  },
+  'iid-biased': {
+    name: 'Biased iid (p=0.9)',
+    stakes: [5, 4, 3, 2, 1],
+    distMode: 'symmetric',
+    symmetric: { p: 0.9, rho: 0 }
+  },
+  'correlated': {
+    name: 'Correlated (p=½, ρ=0.6)',
+    stakes: [5, 4, 3, 2, 1],
+    distMode: 'symmetric',
+    symmetric: { p: 0.5, rho: 0.6 }
+  },
+  'equal-balanced': {
+    name: 'Equal stakes, p=½',
+    stakes: [3, 3, 3, 3, 3],
+    distMode: 'symmetric',
+    symmetric: { p: 0.5, rho: 0 }
+  },
+  'ce1': {
+    name: 'CE 1 · dictatorship beats every franchise',
+    stakes: [17, 8, 7, 4, 1],
+    distMode: 'custom',
+    custom: {
+      atoms: [
+        { bits: [1,1,1,1,0], weight: 864 },
+        { bits: [0,1,1,1,0], weight: 51 },
+        { bits: [1,0,1,1,0], weight: 49 },
+        { bits: [1,1,1,0,0], weight: 21 },
+        { bits: [1,1,0,1,0], weight: 4 },
+        { bits: [1,0,0,1,0], weight: 3 },
+        { bits: [1,1,0,0,0], weight: 2 },
+        { bits: [1,0,1,1,1], weight: 1 },
+        { bits: [1,1,1,1,1], weight: 1 },
+        { bits: [1,0,1,0,0], weight: 1 }
+      ],
+      noise: 0.0001
+    }
+  },
+  'ce2': {
+    name: 'CE 2 · optimum is NOT high-stake',
+    stakes: [5, 4, 3, 2, 1],
+    distMode: 'custom',
+    custom: {
+      atoms: [
+        { bits: [0,1,1,1,0], weight: 10 },
+        { bits: [0,1,1,0,0], weight: 3 },
+        { bits: [0,0,1,1,1], weight: 9 }
+      ],
+      noise: 0.001
+    }
+  }
+};
+
+const state = {
+  stakes: [5, 4, 3, 2, 1],
+  distMode: 'symmetric',
+  symmetric: { p: 0.5, rho: 0 },
+  custom: {
+    atoms: [
+      { bits: [0,1,1,1,0], weight: 10 },
+      { bits: [0,1,1,0,0], weight: 3 },
+      { bits: [0,0,1,1,1], weight: 9 }
+    ],
+    noise: 0.001
+  },
+  selectedFranchise: null,
+  hoveredFranchise: null,
+  activePreset: 'iid-balanced'
+};
+
+function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+function applyPreset(key) {
+  const p = PRESETS[key];
+  state.activePreset = key;
+  state.stakes = [...p.stakes];
+  state.distMode = p.distMode;
+  if (p.symmetric) state.symmetric = { ...p.symmetric };
+  if (p.custom) state.custom = clone(p.custom);
+  state.selectedFranchise = null;
+  state.hoveredFranchise = null;
+  renderAll();
+}
+
+function unsetPreset() {
+  if (state.activePreset !== null) {
+    state.activePreset = null;
+    document.querySelectorAll('#presets button').forEach(b => b.classList.remove('active'));
+  }
+}
+
+// ============================================================================
+// RENDERING
+// ============================================================================
+function renderPresets() {
+  const el = document.getElementById('presets');
+  el.innerHTML = '';
+  for (const [key, p] of Object.entries(PRESETS)) {
+    const btn = document.createElement('button');
+    btn.textContent = p.name;
+    if (state.activePreset === key) btn.classList.add('active');
+    btn.onclick = () => applyPreset(key);
+    el.appendChild(btn);
+  }
+}
+
+function renderStakes() {
+  const el = document.getElementById('stakes-panel');
+  el.innerHTML = '';
+  for (let i = 0; i < N; i++) {
+    const row = document.createElement('div');
+    row.className = 'stake-row';
+    row.innerHTML = `
+      <div class="label">Δ<sub>${i+1}</sub></div>
+      <input type="range" min="0" max="25" step="0.1" value="${state.stakes[i]}">
+      <div class="value">${state.stakes[i].toFixed(1)}</div>
+    `;
+    const slider = row.querySelector('input');
+    const ix = i;
+    slider.oninput = (e) => {
+      state.stakes[ix] = parseFloat(e.target.value);
+      unsetPreset();
+      updateStakeHighlights();
+      row.querySelector('.value').textContent = state.stakes[ix].toFixed(1);
+      renderResults();
+      renderPhase();
+    };
+    el.appendChild(row);
+  }
+  updateStakeHighlights();
+}
+
+function updateStakeHighlights() {
+  const maxStake = Math.max(...state.stakes);
+  document.querySelectorAll('#stakes-panel .stake-row').forEach((row, i) => {
+    row.classList.toggle('rank-best', state.stakes[i] === maxStake && maxStake > 0);
+  });
+}
+
+function syncStakeSliders() {
+  document.querySelectorAll('#stakes-panel .stake-row').forEach((row, i) => {
+    row.querySelector('input').value = state.stakes[i];
+    row.querySelector('.value').textContent = state.stakes[i].toFixed(1);
+  });
+  updateStakeHighlights();
+}
+
+function renderSymmetricDist() {
+  document.getElementById('p-slider').value = state.symmetric.p;
+  document.getElementById('p-val').textContent = state.symmetric.p.toFixed(2);
+  document.getElementById('rho-slider').value = state.symmetric.rho;
+  document.getElementById('rho-val').textContent = state.symmetric.rho.toFixed(2);
+}
+
+function renderAtomsList() {
+  const el = document.getElementById('atoms-list');
+  el.innerHTML = '';
+  for (let idx = 0; idx < state.custom.atoms.length; idx++) {
+    const a = state.custom.atoms[idx];
+    const row = document.createElement('div');
+    row.className = 'atom-row';
+    const bits = a.bits.map((b, i) =>
+      `<button class="atom-bit ${b ? 'on' : ''}" data-i="${i}">${b}</button>`
+    ).join('');
+    row.innerHTML = `
+      <div class="atom-bits">${bits}</div>
+      <input type="range" min="0" max="1000" step="1" value="${a.weight}">
+      <div class="weight-val">${a.weight.toFixed(0)}</div>
+      <button class="remove" title="remove">×</button>
+    `;
+    const localIdx = idx;
+    row.querySelectorAll('.atom-bit').forEach(btn => {
+      btn.onclick = () => {
+        const i = parseInt(btn.dataset.i);
+        state.custom.atoms[localIdx].bits[i] = 1 - state.custom.atoms[localIdx].bits[i];
+        unsetPreset();
+        btn.classList.toggle('on');
+        btn.textContent = state.custom.atoms[localIdx].bits[i];
+        renderResults();
+      };
+    });
+    const slider = row.querySelector('input[type=range]');
+    slider.oninput = (e) => {
+      state.custom.atoms[localIdx].weight = parseFloat(e.target.value);
+      unsetPreset();
+      row.querySelector('.weight-val').textContent = state.custom.atoms[localIdx].weight.toFixed(0);
+      renderResults();
+    };
+    row.querySelector('.remove').onclick = () => {
+      state.custom.atoms.splice(localIdx, 1);
+      unsetPreset();
+      renderAtomsList();
+      renderResults();
+    };
+    el.appendChild(row);
+  }
+  document.getElementById('noise-slider').value = state.custom.noise;
+  document.getElementById('noise-val').textContent = state.custom.noise.toFixed(3);
+}
+
+function renderTabs() {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === state.distMode);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => {
+    c.classList.toggle('active', c.id === 'dist-' + state.distMode);
+  });
+}
+
+let cachedCss = {};
+function getCss(varName) {
+  if (cachedCss[varName]) return cachedCss[varName];
+  const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  cachedCss[varName] = v;
+  return v;
+}
+
+function fmtMembers(members) {
+  return '{' + members.map(m => m + 1).join(',') + '}';
+}
+
+function renderRanking() {
+  recomputeStakeSum(state.stakes);
+  const probs = currentProbs();
+  const data = FRANCHISES.map((f, fIdx) => ({
+    f, fIdx,
+    welfare: welfare(probs, fIdx),
+    highStake: isHighStake(f, state.stakes)
+  }));
+  const bd = bestDictatorship(probs, state.stakes);
+  const totalStake = state.stakes.reduce((a, b) => a + b, 0);
+  const maxWelfare = Math.max(...data.map(d => d.welfare), bd.w0, bd.w1, 0.0001);
+
+  data.sort((a, b) => b.welfare - a.welfare);
+  const optFIdx = data[0].fIdx;
+
+  const rowH = 22;
+  const labelW = 84;
+  const valueW = 56;
+  const chartW = 620;
+  const pad = { top: 32, right: 12, bottom: 8, left: labelW + 8 };
+  const innerW = chartW - pad.left - pad.right - valueW;
+  const chartH = data.length * rowH + pad.top + pad.bottom;
+
+  const scale = innerW / maxWelfare;
+  const selFIdx = state.selectedFranchise;
+
+  const accent = getCss('--accent');
+  const gold = getCss('--gold');
+
+  const out = [];
+  out.push(`<svg viewBox="0 0 ${chartW} ${chartH}" preserveAspectRatio="xMidYMid meet">`);
+
+  // Bars
+  data.forEach((d, i) => {
+    const y = pad.top + i * rowH;
+    const barH = rowH - 4;
+    const w = Math.max(0, d.welfare * scale);
+    const isOpt = d.fIdx === optFIdx;
+    const isSel = d.fIdx === selFIdx;
+    const colorClass = d.highStake ? 'bar-high' : 'bar-notHigh';
+    const cls = `bar-row ${isOpt ? 'optimal' : ''} ${isSel ? 'selected' : ''}`;
+
+    out.push(`<g class="${cls}" data-fidx="${d.fIdx}">`);
+    out.push(`<rect class="bar-bg" x="${pad.left}" y="${y}" width="${innerW}" height="${barH}" rx="2"></rect>`);
+    out.push(`<rect class="${colorClass}" x="${pad.left}" y="${y}" width="${w}" height="${barH}" rx="2"></rect>`);
+    if (isOpt) {
+      out.push(`<rect x="${pad.left - 1.5}" y="${y - 1.5}" width="${innerW + 3}" height="${barH + 3}" fill="none" stroke="${gold}" stroke-width="1.5" rx="3.5"></rect>`);
+      out.push(`<text x="${pad.left - 8}" y="${y + barH / 2 + 4}" text-anchor="end" font-size="11" fill="${gold}">★</text>`);
+    }
+    out.push(`<text class="label" x="${pad.left - 18}" y="${y + barH / 2 + 4}" text-anchor="end">${fmtMembers(d.f.members)}</text>`);
+    out.push(`<text x="${pad.left + w + 5}" y="${y + barH / 2 + 4}">${d.welfare.toFixed(3)}</text>`);
+    out.push(`</g>`);
+  });
+
+  // Dictatorship lines (stacked labels so they never overlap when w0≈w1)
+  function dictLine(w, q, isBest, yLabel) {
+    if (w < 0.001) return;
+    const x = pad.left + w * scale;
+    if (x > chartW - pad.right) return;
+    const sw = isBest ? 2 : 1;
+    const op = isBest ? 1 : 0.55;
+    out.push(`<line x1="${x}" y1="${pad.top - 4}" x2="${x}" y2="${chartH - pad.bottom + 2}" stroke="${accent}" stroke-width="${sw}" stroke-dasharray="5,3" opacity="${op}"></line>`);
+    out.push(`<text x="${x + 4}" y="${yLabel}" fill="${accent}" font-size="10" font-family="monospace" font-weight="${isBest ? 700 : 400}" opacity="${op}">q=${q}: ${w.toFixed(2)}</text>`);
+  }
+  dictLine(bd.w0, 0, bd.q === 0, 12);
+  dictLine(bd.w1, 1, bd.q === 1, 24);
+
+  out.push(`</svg>`);
+
+  const root = document.getElementById('ranking-chart');
+  root.innerHTML = out.join('');
+
+  // Wire up interaction
+  root.querySelectorAll('.bar-row').forEach(g => {
+    const fIdx = parseInt(g.dataset.fidx);
+    g.onmouseenter = () => {
+      state.hoveredFranchise = fIdx;
+      renderDecomp();
+    };
+    g.onmouseleave = () => {
+      state.hoveredFranchise = null;
+      renderDecomp();
+    };
+    g.onclick = () => {
+      state.selectedFranchise = (fIdx === state.selectedFranchise) ? null : fIdx;
+      renderRanking();
+      renderDecomp();
+    };
+  });
+}
+
+function renderDecomp() {
+  recomputeStakeSum(state.stakes);
+  const probs = currentProbs();
+  let bestW = -Infinity, optFIdx = 0;
+  for (let f = 0; f < FRANCHISES.length; f++) {
+    const w = welfare(probs, f);
+    if (w > bestW) { bestW = w; optFIdx = f; }
+  }
+
+  const fIdx = state.hoveredFranchise ?? state.selectedFranchise ?? optFIdx;
+  const f = FRANCHISES[fIdx];
+  const isOpt = fIdx === optFIdx;
+  const isHs = isHighStake(f, state.stakes);
+
+  const badges =
+    (isOpt ? '<span class="badge optimal">★ optimal</span>' : '') +
+    (!isHs ? '<span class="badge not-hs">not high-stake</span>' : '');
+  document.getElementById('decomp-franchise').innerHTML =
+    `C = ${fmtMembers(f.members)} ${badges}`;
+
+  const table = document.getElementById('decomp-table');
+  const inSet = new Set(f.members);
+  let html = '<thead><tr><th class="left">agent</th><th>in C?</th><th>Δᵢ</th><th>P[Xᵢ=Y_C]</th><th>Δᵢ·P</th></tr></thead><tbody>';
+  let total = 0;
+  for (let i = 0; i < N; i++) {
+    const inC = inSet.has(i);
+    const p = successProb(probs, fIdx, i);
+    const contrib = state.stakes[i] * p;
+    total += contrib;
+    html += `<tr class="${inC ? 'insider' : ''}">
+      <td class="left">${i+1}</td>
+      <td>${inC ? '✓' : '·'}</td>
+      <td class="num">${state.stakes[i].toFixed(1)}</td>
+      <td class="num">${p.toFixed(3)}</td>
+      <td class="num">${contrib.toFixed(3)}</td>
+    </tr>`;
+  }
+  html += `<tr class="total"><td class="left" colspan="4">U(C)</td><td class="num">${total.toFixed(3)}</td></tr>`;
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function renderInsights() {
+  recomputeStakeSum(state.stakes);
+  const probs = currentProbs();
+  let bestW = -Infinity, optFIdx = 0;
+  for (let f = 0; f < FRANCHISES.length; f++) {
+    const w = welfare(probs, f);
+    if (w > bestW) { bestW = w; optFIdx = f; }
+  }
+  const opt = FRANCHISES[optFIdx];
+  const optHs = isHighStake(opt, state.stakes);
+  const bd = bestDictatorship(probs, state.stakes);
+  const totalStake = state.stakes.reduce((a, b) => a + b, 0);
+
+  const out = [];
+  out.push(`<div class="insight info">
+    <strong>Optimal franchise</strong>
+    C* = ${fmtMembers(opt.members)} &nbsp;·&nbsp; U(C*) = <span class="num">${bestW.toFixed(3)}</span>
+    &nbsp;<span style="color:var(--muted);">(of max <span class="num">${totalStake.toFixed(1)}</span>)</span>
+  </div>`);
+
+  if (optHs) {
+    out.push(`<div class="insight ok">
+      <strong>Conjecture 2 ✓</strong>
+      Optimum is high-stake: every insider has stake ≥ every outsider.
+    </div>`);
+  } else {
+    const v = findHighStakeViolation(opt, state.stakes);
+    const vmsg = v
+      ? ` Agent ${v.in+1} (Δ=<span class="num">${state.stakes[v.in].toFixed(1)}</span>) is in C*, but excluded agent ${v.out+1} (Δ=<span class="num">${state.stakes[v.out].toFixed(1)}</span>) has higher stake.`
+      : '';
+    out.push(`<div class="insight bad">
+      <strong>Conjecture 2 ✗ violated</strong>
+      Optimum is NOT high-stake.${vmsg}
+    </div>`);
+  }
+
+  const eps = 1e-9;
+  if (bestW >= bd.welfare - eps) {
+    const margin = bestW - bd.welfare;
+    out.push(`<div class="insight ok">
+      <strong>Conjecture 1 ✓</strong>
+      Best franchise (<span class="num">${bestW.toFixed(3)}</span>) ≥ best constant dictatorship q=${bd.q} (<span class="num">${bd.welfare.toFixed(3)}</span>); margin <span class="num">${margin.toFixed(3)}</span>.
+    </div>`);
+  } else {
+    const gap = bd.welfare - bestW;
+    out.push(`<div class="insight bad">
+      <strong>Conjecture 1 ✗ violated</strong>
+      Constant dictatorship q=${bd.q} (<span class="num">${bd.welfare.toFixed(3)}</span>) beats every franchise; best franchise loses by <span class="num">${gap.toFixed(3)}</span>.
+    </div>`);
+  }
+
+  document.getElementById('insights').innerHTML = out.join('');
+}
+
+// ============================================================================
+// PHASE DIAGRAM
+// ============================================================================
+const PHASE_RES = 60;
+const canvas = document.getElementById('phase-canvas');
+canvas.width = PHASE_RES * 4;
+canvas.height = PHASE_RES * 4;
+const ctx = canvas.getContext('2d');
+
+function renderPhase() {
+  recomputeStakeSum(state.stakes);
+  const W = canvas.width;
+  const H = canvas.height;
+  const cellW = W / PHASE_RES;
+  const cellH = H / PHASE_RES;
+  const img = ctx.createImageData(W, H);
+
+  for (let pi = 0; pi < PHASE_RES; pi++) {
+    const p = (pi + 0.5) / PHASE_RES;
+    for (let ri = 0; ri < PHASE_RES; ri++) {
+      const rho = ri / (PHASE_RES - 1) * 0.99;
+      const probs = symmetricDist(p, rho);
+      let bestW = -Infinity, bestF = 0;
+      for (let f = 0; f < FRANCHISES.length; f++) {
+        const w = welfare(probs, f);
+        if (w > bestW) { bestW = w; bestF = f; }
+      }
+      const hs = isHighStake(FRANCHISES[bestF], state.stakes);
+      const bd = bestDictatorship(probs, state.stakes);
+      const beatsDict = bestW >= bd.welfare - 1e-9;
+      let color;
+      if (hs && beatsDict)      color = [182, 229, 194];
+      else if (hs && !beatsDict) color = [245, 216, 160];
+      else if (!hs && beatsDict) color = [240, 182, 194];
+      else                       color = [192, 133, 147];
+
+      const x0 = Math.floor(pi * cellW);
+      const x1 = Math.floor((pi + 1) * cellW);
+      const y0 = Math.floor(H - (ri + 1) * cellH);
+      const y1 = Math.floor(H - ri * cellH);
+      for (let y = y0; y < y1; y++) {
+        for (let x = x0; x < x1; x++) {
+          const idx = (y * W + x) * 4;
+          img.data[idx]     = color[0];
+          img.data[idx + 1] = color[1];
+          img.data[idx + 2] = color[2];
+          img.data[idx + 3] = 255;
+        }
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // Marker for current symmetric point
+  const marker = document.getElementById('phase-marker');
+  if (state.distMode === 'symmetric') {
+    marker.style.display = 'block';
+    marker.style.left = (state.symmetric.p * 100) + '%';
+    marker.style.top = ((1 - state.symmetric.rho) * 100) + '%';
+  } else {
+    marker.style.display = 'none';
+  }
+}
+
+function setupPhaseInteraction() {
+  let dragging = false;
+  function update(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, 1 - (e.clientY - rect.top) / rect.height));
+    state.symmetric.p = Math.max(0.01, Math.min(0.99, x));
+    state.symmetric.rho = Math.max(0, Math.min(0.99, y));
+    if (state.distMode !== 'symmetric') {
+      state.distMode = 'symmetric';
+      renderTabs();
+    }
+    unsetPreset();
+    renderSymmetricDist();
+    renderResults();
+    // marker only
+    const marker = document.getElementById('phase-marker');
+    marker.style.display = 'block';
+    marker.style.left = (state.symmetric.p * 100) + '%';
+    marker.style.top = ((1 - state.symmetric.rho) * 100) + '%';
+  }
+  canvas.addEventListener('mousedown', (e) => { dragging = true; update(e); e.preventDefault(); });
+  canvas.addEventListener('mousemove', (e) => { if (dragging) update(e); });
+  document.addEventListener('mouseup', () => { dragging = false; });
+}
+
+// ============================================================================
+// RENDER ORCHESTRATION
+// ============================================================================
+function renderResults() {
+  renderRanking();
+  renderDecomp();
+  renderInsights();
+}
+
+function renderAll() {
+  renderPresets();
+  syncStakeSliders();
+  renderTabs();
+  renderSymmetricDist();
+  renderAtomsList();
+  renderResults();
+  renderPhase();
+}
+
+// ============================================================================
+// EVENT WIRING (one-time)
+// ============================================================================
+renderStakes();
+
+document.getElementById('p-slider').oninput = (e) => {
+  state.symmetric.p = parseFloat(e.target.value);
+  document.getElementById('p-val').textContent = state.symmetric.p.toFixed(2);
+  unsetPreset();
+  renderResults();
+  // marker
+  const marker = document.getElementById('phase-marker');
+  if (state.distMode === 'symmetric') {
+    marker.style.left = (state.symmetric.p * 100) + '%';
+    marker.style.top = ((1 - state.symmetric.rho) * 100) + '%';
+  }
+};
+document.getElementById('rho-slider').oninput = (e) => {
+  state.symmetric.rho = parseFloat(e.target.value);
+  document.getElementById('rho-val').textContent = state.symmetric.rho.toFixed(2);
+  unsetPreset();
+  renderResults();
+  const marker = document.getElementById('phase-marker');
+  if (state.distMode === 'symmetric') {
+    marker.style.left = (state.symmetric.p * 100) + '%';
+    marker.style.top = ((1 - state.symmetric.rho) * 100) + '%';
+  }
+};
+document.getElementById('noise-slider').oninput = (e) => {
+  state.custom.noise = parseFloat(e.target.value);
+  document.getElementById('noise-val').textContent = state.custom.noise.toFixed(3);
+  unsetPreset();
+  renderResults();
+};
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    state.distMode = t.dataset.tab;
+    unsetPreset();
+    renderTabs();
+    renderResults();
+    renderPhase();
+  };
+});
+document.getElementById('add-atom').onclick = () => {
+  state.custom.atoms.push({ bits: [0,0,0,0,0], weight: 100 });
+  unsetPreset();
+  renderAtomsList();
+  renderResults();
+};
+setupPhaseInteraction();
+
+applyPreset('iid-balanced');
+</script>
+</body>
+</html>
