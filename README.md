@@ -10,10 +10,10 @@ The paper asks two natural questions:
 2. Is the optimal franchise composed of the highest-stake agents?
 
 In full generality (joint opinion distribution with full support), **both
-answers are no.** We give explicit five-agent counterexamples with exact
-rational margins. Once opinions are common iid Bernoulli, **both answers
-become yes**, and under fair-coin opinions the optimal franchise reduces to
-a one-dimensional prefix rule.
+answers are no.** The paper gives explicit five-agent counterexamples with
+exact rational margins. The corresponding positive results under symmetric
+and iid opinions are due to Fleurbaey and Lojkine, *Social Choice and Welfare*
+(2025), DOI: `10.1007/s00355-025-01607-9`.
 
 ## Files
 
@@ -27,6 +27,6 @@ https://lovasoa.github.io/optimal-enfranchisement/enfranchisement_explorer.html
 
 <img width="2928" height="5940" alt="image" src="https://github.com/user-attachments/assets/6409c136-bf0e-4ae8-a41d-fe4a2f90630b" />
 
-## Authors
+## Author
 
-Claude Opus 4.7 and Codex GPT-5.5.
+Ulysse Lojkine.
