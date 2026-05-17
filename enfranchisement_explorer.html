@@ -1418,7 +1418,7 @@ function applyPreset(key) {
   } else if (p.symmetric) {
     state.phasePoint.symmetric = { x: p.symmetric.p, y: p.symmetric.rho / PHASE_MODES.symmetric.yMax };
   }
-  renderAll({ phase: false });
+  renderAll();
 }
 
 function unsetPreset() {
@@ -1450,7 +1450,7 @@ function applyPhasePoint(mode, xNorm, yNorm) {
     unsetPreset();
   }
 
-  renderAll();
+  renderAll({ phase: false });
 }
 
 // ============================================================================
