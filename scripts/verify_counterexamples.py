@@ -1,4 +1,4 @@
-"""Verify the counterexamples in proof-codex-gpt5.5-xhigh.tex.
+"""Verify the counterexamples in paper.tex.
 
 This script checks both original conjectures:
 
@@ -30,29 +30,33 @@ from common import (
 def verify_dictatorship_counterexample() -> None:
     """Check Conjecture 1 counterexample exactly."""
     n = 5
-    stakes = (17, 8, 7, 4, 1)
+    stakes = (5, 4, 3, 2, 1)
     sparse_distribution = normalize_weighted_states(
         [
-            ((1, 1, 1, 1, 0), 864),
-            ((0, 1, 1, 1, 0), 51),
-            ((1, 0, 1, 1, 0), 49),
-            ((1, 1, 1, 0, 0), 21),
-            ((1, 1, 0, 1, 0), 4),
-            ((1, 0, 0, 1, 0), 3),
-            ((1, 1, 0, 0, 0), 2),
-            ((1, 0, 1, 1, 1), 1),
-            ((1, 1, 1, 1, 1), 1),
-            ((1, 0, 1, 0, 0), 1),
+            ((0, 1, 1, 1, 0), 1),
+            ((1, 0, 0, 1, 1), 3),
+            ((1, 0, 1, 0, 1), 1),
+            ((1, 1, 0, 0, 0), 1),
         ]
     )
+    sparse_values = welfare_table(stakes, sparse_distribution)
+    sparse_dictatorship_welfare, sparse_dictatorship_outcome = best_dictatorship_welfare(
+        stakes, sparse_distribution
+    )
+    sparse_best_franchise = max(sparse_values.values())
+
+    assert sparse_dictatorship_outcome == 1
+    assert sparse_dictatorship_welfare == Fraction(17, 2)
+    assert sparse_best_franchise == Fraction(8, 1)
+    assert sparse_dictatorship_welfare - sparse_best_franchise == Fraction(1, 2)
 
     # The tiny uniform component enforces the paper's full-support assumption
     # without changing the strict ranking.
     distribution = mix_distributions(
         sparse_distribution,
-        Fraction(9999, 10000),
+        Fraction(99, 100),
         uniform_distribution(n),
-        Fraction(1, 10000),
+        Fraction(1, 100),
     )
 
     values = welfare_table(stakes, distribution)
@@ -80,9 +84,9 @@ def verify_high_stake_counterexample() -> None:
 
     base_distribution = normalize_weighted_states(
         [
-            ((0, 1, 1, 1, 0), 10),
-            ((0, 1, 1, 0, 0), 3),
-            ((0, 0, 1, 1, 1), 9),
+            ((1, 0, 0, 0, 1), 1),
+            ((1, 0, 0, 1, 1), 3),
+            ((1, 1, 0, 0, 0), 1),
         ]
     )
     base_values = welfare_table(stakes, base_distribution)
@@ -93,15 +97,15 @@ def verify_high_stake_counterexample() -> None:
     )
 
     assert unique_argmax(base_values) == c_star
-    assert base_margin == Fraction(3, 22)
+    assert base_margin == Fraction(3, 5)
     assert not is_high_stake(stakes, c_star)
 
     # Add a tiny uniform component so every state has positive probability.
     full_support_distribution = mix_distributions(
         base_distribution,
-        Fraction(999, 1000),
+        Fraction(99, 100),
         uniform_distribution(n),
-        Fraction(1, 1000),
+        Fraction(1, 100),
     )
     full_support_values = welfare_table(stakes, full_support_distribution)
     full_support_margin = min(
@@ -118,10 +122,10 @@ def verify_high_stake_counterexample() -> None:
     print(f"  unique optimum under base distribution: {format_franchise(c_star)}")
     print(f"  base margin: {base_margin}")
     print(f"  full-support margin: {full_support_margin}")
-    print("  base welfare table, scaled by 22:")
+    print("  base welfare table, scaled by 5:")
     for franchise, value in sorted(base_values.items(), key=lambda item: (-item[1], item[0])):
         high = "high" if is_high_stake(stakes, franchise) else "not high"
-        print(f"  {format_franchise(franchise):>13}: {str(22 * value):>3} ({high})")
+        print(f"  {format_franchise(franchise):>13}: {str(5 * value):>3} ({high})")
     print()
 
 

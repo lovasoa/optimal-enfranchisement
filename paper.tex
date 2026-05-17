@@ -101,43 +101,42 @@ There exist stakes $(\Delta_1, \ldots, \Delta_5)$ and a full-support distributio
 \end{proposition}
 
 \begin{proof}
-Take $N = 5$ and $(\Delta_1, \ldots, \Delta_5) = (17, 8, 7, 4, 1)$.  Define $P_0$ on $\{0,1\}^5$ by the following ten atoms, with integer weights summing to $997$:
+Take $N = 5$ and $(\Delta_1, \ldots, \Delta_5) = (5, 4, 3, 2, 1)$.  Define $P_0$ on $\{0,1\}^5$ by the following four atoms, with integer weights summing to $6$:
 \[
-\begin{array}{c|r@{\qquad}c|r}
-x & 997\, P_0[X = x] & x & 997\, P_0[X = x] \\
+\begin{array}{c|r}
+x & 6\, P_0[X = x] \\
 \hline
-(1,1,1,1,0) & 864 & (1,0,0,1,0) & 3 \\
-(0,1,1,1,0) & 51  & (1,1,0,0,0) & 2 \\
-(1,0,1,1,0) & 49  & (1,0,1,1,1) & 1 \\
-(1,1,1,0,0) & 21  & (1,1,1,1,1) & 1 \\
-(1,1,0,1,0) & 4   & (1,0,1,0,0) & 1 .
+(0,1,1,1,0) & 1 \\
+(1,0,0,1,1) & 3 \\
+(1,0,1,0,1) & 1 \\
+(1,1,0,0,0) & 1 .
 \end{array}
 \]
-The dictatorship $q = 1$ has welfare $34436/997$.  The welfares of all sixteen odd franchises, multiplied by $997$, are:
+The dictatorship $q = 1$ has welfare $17/2$.  The welfares of all sixteen odd franchises, multiplied by $6$, are:
 \[
 \begin{array}{c|r@{\qquad}c|r}
-C & 997\, U_{P_0}(C) & C & 997\, U_{P_0}(C) \\
+C & 6\, U_{P_0}(C) & C & 6\, U_{P_0}(C) \\
 \hline
-\{1\}         & 34385 & \{1,2,3\} & 34421 \\
-\{2\}         & 33458 & \{1,2,4\} & 34425 \\
-\{3\}         & 34311 & \{1,2,5\} & 33428 \\
-\{4\}         & 33832 & \{1,3,4\} & 34410 \\
-\{5\}         &  2511 & \{1,3,5\} & 34260 \\
-\{1,4,5\}     & 33781 & \{2,3,4\} & 34384 \\
-\{2,3,5\}     & 33369 & \{2,4,5\} & 32886 \\
-\{3,4,5\}     & 33733 & \{1,2,3,4,5\} & 34384 .
+\{1\}         & 48 & \{1,2,3\}     & 48 \\
+\{2\}         & 45 & \{1,2,4\}     & 48 \\
+\{3\}         & 45 & \{1,2,5\}     & 48 \\
+\{4\}         & 45 & \{1,3,4\}     & 48 \\
+\{5\}         & 45 & \{1,3,5\}     & 45 \\
+\{1,4,5\}     & 45 & \{2,3,4\}     & 42 \\
+\{2,3,5\}     & 45 & \{2,4,5\}     & 45 \\
+\{3,4,5\}     & 48 & \{1,2,3,4,5\} & 48 .
 \end{array}
 \]
-The best franchise is $\{1,2,4\}$ with welfare $34425/997$, so the dictatorship beats every franchise by at least $11/997$.
+The best franchise welfare is $8$, so the dictatorship beats every franchise by at least $1/2$.
 
 Mix $P_0$ with the uniform distribution $R$ on $\{0,1\}^5$ to enforce full support:
 \[
-    P = \tfrac{9999}{10000}\, P_0 + \tfrac{1}{10000}\, R .
+    P = \tfrac{99}{100}\, P_0 + \tfrac{1}{100}\, R .
 \]
-Total stake is $37$, so replacing $P_0$ by $P$ can shrink any welfare gap by at most $37/10000$.  Since
+Total stake is $15$, so replacing $P_0$ by $P$ can shrink any welfare gap by at most $15/100$.  Since
 \[
-    \tfrac{9999}{10000}\cdot\tfrac{11}{997} \;-\; \tfrac{37}{10000}
-    \;=\; \tfrac{731}{99700} \;>\; 0,
+    \tfrac{99}{100}\cdot\tfrac{1}{2} \;-\; \tfrac{15}{100}
+    \;=\; \tfrac{69}{200} \;>\; 0,
 \]
 the dictatorship $q = 1$ still beats every franchise under the full-support distribution $P$.
 \end{proof}
@@ -154,41 +153,41 @@ Take $N = 5$ and $(\Delta_1, \ldots, \Delta_5) = (5, 4, 3, 2, 1)$.  Define $P_0$
 \begin{array}{c|c}
 x & P_0[X = x] \\
 \hline
-(0,1,1,1,0) & 10/22 \\
-(0,1,1,0,0) &  3/22 \\
-(0,0,1,1,1) &  9/22 .
+(1,0,0,0,1) & 1/5 \\
+(1,0,0,1,1) & 3/5 \\
+(1,1,0,0,0) & 1/5 .
 \end{array}
 \]
-Let $C^\star = \{1, 2, 4\}$.  The welfares $22\, U_{P_0}(C)$ across the sixteen odd franchises are:
+Let $C^\star = \{1, 2, 4\}$.  The welfares $5\, U_{P_0}(C)$ across the sixteen odd franchises are:
 \[
 \begin{array}{c|r@{\qquad}c|r}
-C & 22\, U_{P_0}(C) & C & 22\, U_{P_0}(C) \\
+C & 5\, U_{P_0}(C) & C & 5\, U_{P_0}(C) \\
 \hline
-\{1\}         & 165 & \{1,2,3\}     & 192 \\
-\{2\}         & 192 & \{1,2,4\}     & 195 \\
-\{3\}         & 165 & \{1,2,5\}     & 165 \\
-\{4\}         & 168 & \{1,3,4\}     & 168 \\
-\{5\}         & 138 & \{1,3,5\}     & 138 \\
-\{1,4,5\}     & 138 & \{2,3,4\}     & 165 \\
-\{2,3,5\}     & 165 & \{2,4,5\}     & 168 \\
-\{3,4,5\}     & 168 & \{1,2,3,4,5\} & 168 .
+\{1\}         & 39 & \{1,2,3\}     & 39 \\
+\{2\}         & 39 & \{1,2,4\}     & 42 \\
+\{3\}         & 36 & \{1,2,5\}     & 39 \\
+\{4\}         & 39 & \{1,3,4\}     & 39 \\
+\{5\}         & 36 & \{1,3,5\}     & 36 \\
+\{1,4,5\}     & 36 & \{2,3,4\}     & 36 \\
+\{2,3,5\}     & 36 & \{2,4,5\}     & 39 \\
+\{3,4,5\}     & 39 & \{1,2,3,4,5\} & 39 .
 \end{array}
 \]
-$C^\star$ is the unique maximizer, beating every other franchise by at least $3/22$.
+$C^\star$ is the unique maximizer, beating every other franchise by at least $3/5$.
 
 Mixing with the uniform $R$ on $\{0,1\}^5$,
 \[
-    P = \tfrac{999}{1000}\, P_0 + \tfrac{1}{1000}\, R ,
+    P = \tfrac{99}{100}\, P_0 + \tfrac{1}{100}\, R ,
 \]
 gives full support.  Total stake is $15$, so for any other franchise $D$,
 \[
-    U_P(C^\star) - U_P(D) \;\geq\; \tfrac{999}{1000}\cdot\tfrac{3}{22} \;-\; \tfrac{1}{1000}\cdot 15 \;=\; \tfrac{2667}{22000} \;>\; 0,
+    U_P(C^\star) - U_P(D) \;\geq\; \tfrac{99}{100}\cdot\tfrac{3}{5} \;-\; \tfrac{1}{100}\cdot 15 \;=\; \tfrac{111}{250} \;>\; 0,
 \]
 and $C^\star$ remains the unique optimum.  Because the stakes are strictly decreasing, the only high-stake franchises of odd size are $\{1\}$, $\{1,2,3\}$, and $\{1,2,3,4,5\}$.  Since $C^\star$ excludes agent $3$ (stake $3$) while including agent $4$ (stake $2$), $C^\star$ is not high-stake.
 \end{proof}
 
 \paragraph{Intuition.}
-In Proposition~\ref{prop:high-stake}, agent $3$'s opinion is constantly $1$ under $P_0$ and so conveys no information, while agent $4$'s opinion correlates with whether high-stake agent $1$'s preferred outcome is reachable.  Swapping voter $3$ for voter $4$ in the size-three franchise changes $Y$ in exactly the state $(0,1,1,0,0)$, flipping it from $1$ (pleasing stakes $4+3 = 7$) to $0$ (pleasing stakes $5+2+1 = 8$); the net gain $1 \times 3/22$ is the entire margin.  In Proposition~\ref{prop:dict}, the joint distribution is sharply biased towards $X_1 = 1$, and the constant dictator who sides with the very-high-stake agent $1$ outperforms any majority of a fluctuating subset.
+In Proposition~\ref{prop:high-stake}, agent $3$'s opinion is constantly $0$ under $P_0$ and so conveys no information, while agent $4$'s opinion marks the high-probability state in which outcome $1$ best serves the high-stake agents.  Swapping voter $3$ for voter $4$ in the size-three franchise changes $Y$ in exactly the state $(1,0,0,1,1)$, flipping it from $0$ (pleasing stakes $4+3 = 7$) to $1$ (pleasing stakes $5+2+1 = 8$); the net gain $1 \times 3/5$ is the entire margin.  In Proposition~\ref{prop:dict}, the joint distribution is biased towards $X_1 = 1$, and the constant dictator who sides with the highest-stake agent outperforms any majority of a fluctuating subset.
 
 \section{Positive results under iid opinions}\label{sec:positive}
 
@@ -306,7 +305,7 @@ So $a_m D_m$ strictly increases in odd $m$, and the largest feasible odd size is
 \end{proof}
 
 \paragraph{Where the assumptions bite.}
-Theorem~\ref{thm:balanced-dict} needs balance: the dictatorship counterexample puts almost all mass on states with $X_1 = 1$, and dictating $q = 1$ exploits exactly that asymmetry.  The common-distribution part of Assumption~\ref{ass:iid} is what powers Theorem~\ref{thm:iid-high-stake}: when agents have heterogeneous marginals, an enfranchised low-stake agent may be valuable because her vote tracks high-stake outsiders, which is the force in the counterexample of Proposition~\ref{prop:high-stake}.  This is also why the expert-voting literature \cite{nitzan-paroush, berend} ranks voters by competence rather than by welfare stake.
+Theorem~\ref{thm:balanced-dict} needs balance: the dictatorship counterexample puts most mass on states with $X_1 = 1$, and dictating $q = 1$ exploits exactly that asymmetry.  The common-distribution part of Assumption~\ref{ass:iid} is what powers Theorem~\ref{thm:iid-high-stake}: when agents have heterogeneous marginals, an enfranchised low-stake agent may be valuable because her vote tracks high-stake outsiders, which is the force in the counterexample of Proposition~\ref{prop:high-stake}.  This is also why the expert-voting literature \cite{nitzan-paroush, berend} ranks voters by competence rather than by welfare stake.
 
 \begin{thebibliography}{9}
 

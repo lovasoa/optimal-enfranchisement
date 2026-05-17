@@ -827,8 +827,8 @@ footer {
         <div class="atoms-list" id="atoms-list"></div>
         <button class="add-atom" id="add-atom">+ add outcome</button>
         <div class="dist-control" style="margin-top: 14px;">
-          <div class="label-row"><span>Uniform noise (full-support mix)</span><span class="value" id="noise-val">0.000</span></div>
-          <input type="range" id="noise-slider" min="0" max="1" step="0.001" value="0.0001">
+          <div class="label-row"><span>Uniform noise (full-support mix)</span><span class="value" id="noise-val">0.010</span></div>
+          <input type="range" id="noise-slider" min="0" max="1" step="0.001" value="0.01">
         </div>
       </div>
     </section>
@@ -900,7 +900,7 @@ footer {
         <div class="phase-axis" id="phase-x-min" style="left: 0; bottom: -18px;">0</div>
         <div class="phase-axis" id="phase-x-max" style="right: 0; bottom: -18px;">1</div>
         <div class="phase-axis" id="phase-y-min" style="left: -38px; bottom: -4px;">0</div>
-        <div class="phase-axis" id="phase-y-max" style="left: -38px; top: -4px;">0.001</div>
+        <div class="phase-axis" id="phase-y-max" style="left: -38px; top: -4px;">0.05</div>
         <div class="phase-label" id="phase-x-label" style="bottom: -36px; left: 50%; transform: translateX(-50%);">mixture toward CE1</div>
         <div class="phase-label" id="phase-y-label" style="left: -62px; top: 50%; transform: rotate(-90deg) translateX(50%); transform-origin: 0 0;">uniform profile share ε</div>
       </div>
@@ -1277,37 +1277,31 @@ const PRESETS = {
   },
   'ce1': {
     name: 'CE1: dictatorship wins',
-    note: 'Counterexample 1: opinions are so biased toward outcome 1 that the constant "always say 1" rule beats every voting committee — conjecture 1 fails.',
-    stakes: [17, 8, 7, 4, 1],
-    distMode: 'custom',
-    custom: {
-      atoms: [
-        { bits: [1,1,1,1,0], weight: 864 },
-        { bits: [0,1,1,1,0], weight: 51 },
-        { bits: [1,0,1,1,0], weight: 49 },
-        { bits: [1,1,1,0,0], weight: 21 },
-        { bits: [1,1,0,1,0], weight: 4 },
-        { bits: [1,0,0,1,0], weight: 3 },
-        { bits: [1,1,0,0,0], weight: 2 },
-        { bits: [1,0,1,1,1], weight: 1 },
-        { bits: [1,1,1,1,1], weight: 1 },
-        { bits: [1,0,1,0,0], weight: 1 }
-      ],
-      noise: 0.0001
-    }
-  },
-  'ce2': {
-    name: 'CE2: proxy effect',
-    note: 'Counterexample 2: a lower-stake agent\'s vote reliably tracks the high-stake agents outside the committee, making her more valuable than a higher-stake agent whose opinion is already known — conjecture 2 fails.',
+    note: 'Counterexample 1: a four-atom correlated distribution makes the constant "always say 1" rule beat every voting committee — conjecture 1 fails.',
     stakes: [5, 4, 3, 2, 1],
     distMode: 'custom',
     custom: {
       atoms: [
-        { bits: [0,1,1,1,0], weight: 10 },
-        { bits: [0,1,1,0,0], weight: 3 },
-        { bits: [0,0,1,1,1], weight: 9 }
+        { bits: [0,1,1,1,0], weight: 1 },
+        { bits: [1,0,0,1,1], weight: 3 },
+        { bits: [1,0,1,0,1], weight: 1 },
+        { bits: [1,1,0,0,0], weight: 1 }
       ],
-      noise: 0.001
+      noise: 0.01
+    }
+  },
+  'ce2': {
+    name: 'CE2: proxy effect',
+    note: 'Counterexample 2: a lower-stake agent\'s vote marks the high-probability state where outcome 1 serves high-stake outsiders, making her more valuable than a higher-stake agent whose opinion is already known — conjecture 2 fails.',
+    stakes: [5, 4, 3, 2, 1],
+    distMode: 'custom',
+    custom: {
+      atoms: [
+        { bits: [1,0,0,0,1], weight: 1 },
+        { bits: [1,0,0,1,1], weight: 3 },
+        { bits: [1,1,0,0,0], weight: 1 }
+      ],
+      noise: 0.01
     }
   }
 };
@@ -1321,7 +1315,7 @@ const PHASE_MODES = {
     preset: 'ce1',
     xLabel: 'balanced iid → CE1 distribution',
     yLabel: 'full-support noise ε',
-    yMax: 0.001,
+    yMax: 0.05,
     focusPower: 5
   },
   highstake: {
@@ -1351,11 +1345,11 @@ const state = {
   symmetric: { p: 0.5, rho: 0 },
   custom: {
     atoms: [
-      { bits: [0,1,1,1,0], weight: 10 },
-      { bits: [0,1,1,0,0], weight: 3 },
-      { bits: [0,0,1,1,1], weight: 9 }
+      { bits: [1,0,0,0,1], weight: 1 },
+      { bits: [1,0,0,1,1], weight: 3 },
+      { bits: [1,1,0,0,0], weight: 1 }
     ],
-    noise: 0.001
+    noise: 0.01
   },
   selectedFranchise: null,
   hoveredFranchise: null,
@@ -1363,8 +1357,8 @@ const state = {
   randomSeed: 'counterexample-lab',
   phaseMode: 'dictatorship',
   phasePoint: {
-    dictatorship: { x: 1, y: 0.1 },
-    highstake: { x: 1, y: 0.02 },
+    dictatorship: { x: 1, y: 0.2 },
+    highstake: { x: 1, y: 0.2 },
     symmetric: { x: 0.5, y: 0 }
   }
 };
