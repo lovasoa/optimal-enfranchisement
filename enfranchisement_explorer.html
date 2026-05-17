@@ -882,7 +882,7 @@ footer {
     <button data-phase="highstake">High-stake failure</button>
     <button data-phase="symmetric">Symmetric slice</button>
   </div>
-  <p class="hint" id="phase-hint">Sweep from balanced iid to the CE1 sparse distribution, with uniform noise on the vertical axis. Drag inside to load a cell into the explorer.</p>
+  <p class="hint" id="phase-hint">Sweep from balanced iid to the CE1 sparse distribution. The vertical axis is the share replaced by the uniform distribution over all 32 opinion profiles.</p>
   <div class="phase-wrap">
     <div style="position: relative;">
       <div id="phase-canvas-wrap">
@@ -893,7 +893,7 @@ footer {
         <div class="phase-axis" id="phase-y-min" style="left: -38px; bottom: -4px;">0</div>
         <div class="phase-axis" id="phase-y-max" style="left: -38px; top: -4px;">0.001</div>
         <div class="phase-label" id="phase-x-label" style="bottom: -36px; left: 50%; transform: translateX(-50%);">mixture toward CE1</div>
-        <div class="phase-label" id="phase-y-label" style="left: -62px; top: 50%; transform: rotate(-90deg) translateX(50%); transform-origin: 0 0;">uniform noise ε</div>
+        <div class="phase-label" id="phase-y-label" style="left: -62px; top: 50%; transform: rotate(-90deg) translateX(50%); transform-origin: 0 0;">uniform profile share ε</div>
       </div>
     </div>
     <div class="phase-legend">
@@ -1307,22 +1307,22 @@ const PHASE_MODES = {
   dictatorship: {
     label: 'Dictatorship failure',
     meta: 'CE1 stakes · mixture/noise sweep',
-    hint: 'Sweep from balanced iid to the CE1 sparse distribution, with uniform noise on the vertical axis. The horizontal scale expands the final approach to CE1 so the narrow failure band is visible.',
+    hint: 'Sweep from balanced iid to the CE1 sparse distribution. The vertical axis is ε: the share replaced by the uniform distribution over all 32 opinion profiles to guarantee full support.',
     note: 'This is the counterexample-relevant view for C1. Non-green cells mark where the best constant rule beats every majority franchise; many are purple because C2 fails there too.',
     preset: 'ce1',
     xLabel: 'CE1 approach (balanced → CE1)',
-    yLabel: 'uniform noise ε',
+    yLabel: 'uniform profile share ε',
     yMax: 0.001,
     focusPower: 5
   },
   highstake: {
     label: 'High-stake failure',
     meta: 'CE2 stakes · mixture/noise sweep',
-    hint: 'Sweep from balanced iid to the CE2 sparse distribution, with uniform noise on the vertical axis. Drag inside to load a cell into the explorer; the marker shows the last loaded cell in this family.',
+    hint: 'Sweep from balanced iid to the CE2 sparse distribution. The vertical axis is ε: the share replaced by the uniform distribution over all 32 opinion profiles to guarantee full support.',
     note: 'This isolates the C2 proxy effect: the non-high-stake optimum survives over a visible region near CE2.',
     preset: 'ce2',
     xLabel: 'mixture toward CE2',
-    yLabel: 'uniform noise ε',
+    yLabel: 'uniform profile share ε',
     yMax: 0.05
   },
   symmetric: {
