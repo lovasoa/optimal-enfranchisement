@@ -391,7 +391,7 @@ def verifies_target(candidate: WeightedCandidate, target: tuple[int, ...]) -> bo
     return unique_argmax(values) == target
 
 
-def print_candidate(candidate: WeightedCandidate) -> None:
+def print_candidate(candidate: WeightedCandidate, show_all_franchises: bool) -> None:
     """Print one exact candidate in a paper-friendly form."""
     distribution = normalize_weighted_states(candidate.support)
     values = welfare_table(candidate.stakes, distribution)
@@ -411,7 +411,13 @@ def print_candidate(candidate: WeightedCandidate) -> None:
         target = unique_argmax(values)
         print(f"  unique optimum={format_franchise(target) if target else None}")
     print("  top franchises:")
-    for franchise, value in sorted(values.items(), key=lambda item: (-item[1], item[0]))[:6]:
+    franchise_values = sorted(values.items(), key=lambda item: (-item[1], item[0]))
+    if show_all_franchises:
+        franchise_values = sorted(values.items(), key=lambda item: (len(item[0]), item[0]))
+    else:
+        franchise_values = franchise_values[:6]
+
+    for franchise, value in franchise_values:
         high = "high" if is_high_stake(candidate.stakes, franchise) else "not high"
         print(f"    {format_franchise(franchise):>13}: {value} ({high})")
     print()
@@ -468,6 +474,11 @@ def parse_args() -> argparse.Namespace:
         default=10,
         help="number of candidates to print for each search",
     )
+    parser.add_argument(
+        "--show-all-franchises",
+        action="store_true",
+        help="print every odd franchise value for each displayed candidate",
+    )
     return parser.parse_args()
 
 
@@ -487,7 +498,7 @@ def main() -> None:
 
         print("Small dictatorship candidates")
         for candidate in dictatorship_candidates[: args.top]:
-            print_candidate(candidate)
+            print_candidate(candidate, show_all_franchises=args.show_all_franchises)
 
     if args.problem in ("all", "non-high-stake"):
         non_high_stake_candidates = find_small_non_high_stake_examples(
@@ -501,7 +512,7 @@ def main() -> None:
 
         print("Small non-high-stake candidates")
         for candidate in non_high_stake_candidates[: args.top]:
-            print_candidate(candidate)
+            print_candidate(candidate, show_all_franchises=args.show_all_franchises)
 
 
 if __name__ == "__main__":
