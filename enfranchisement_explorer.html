@@ -765,8 +765,9 @@ footer {
 
 <header>
   <h1>Optimal Enfranchisement Explorer</h1>
-  <p class="subtitle">A planner picks an odd-size subset of <code>N=5</code> agents; that subset votes by strict majority on a binary decision. Each agent <code>i</code> has stake <code>Δᵢ ≥ 0</code> and the planner maximises <code>E[Σ Δᵢ · 𝟙(Xᵢ = Y_C)]</code>.</p>
-  <p class="subtitle">Two natural conjectures: <em>(1)</em> some franchise dominates any constant-rule dictatorship; <em>(2)</em> the optimum is &ldquo;high-stake&rdquo; (insiders all weakly higher stake than outsiders). Both fail under full support alone. Play with the controls to find out when, and why.</p>
+  <p class="subtitle">Five agents each have a preference (0 or 1) on a binary decision and a <span class="tip" title="how much the agent gains when the decision matches their preference">stake</span> — how much they care. A planner chooses a voting committee; the committee's majority wins. The question: <em>who should be on the committee?</em></p>
+  <p class="subtitle">A planner picks an odd-size <span class="tip" title="the subset of agents allowed to vote; must be odd-sized so there are no ties">franchise</span> of <code>N=5</code> agents; that subset votes by <span class="tip" title="more than half the committee must agree; odd size guarantees no tie">strict majority</span> on a binary decision. Each agent <code>i</code> has stake <code>Δᵢ ≥ 0</code> and the planner maximises <code class="tip" title="expected total stake of agents whose preference matches the committee's decision">E[Σ Δᵢ · 𝟙(Xᵢ = Y_C)]</code>.</p>
+  <p class="subtitle">Two natural conjectures: <em>(1)</em> some franchise dominates any constant-rule <span class="tip" title="always pick outcome 0 (or always 1), ignoring all votes — the best such rule has welfare equal to the total stake of agents who usually prefer the dominant outcome">dictatorship</span>; <em>(2)</em> the optimum is &ldquo;<span class="tip" title="every insider has stake ≥ every outsider — i.e. the top-k agents by stake are enfranchised">high-stake</span>&rdquo; (insiders all weakly higher stake than outsiders). Both fail under full support alone. Play with the controls to find out when, and why.</p>
 </header>
 
 <div class="layout">
@@ -774,6 +775,7 @@ footer {
   <aside>
     <section class="card">
       <h2>Presets</h2>
+      <p class="hint">Start here — each preset illustrates a different regime. The two counterexamples (CE1, CE2) are the main results of the paper.</p>
       <div class="preset-grid" id="presets"></div>
       <div class="preset-note" id="preset-note" style="display:none;"></div>
     </section>
@@ -796,6 +798,7 @@ footer {
 
     <section class="card">
       <h2>Stakes <span class="meta">Δᵢ for each agent</span></h2>
+      <p class="hint">How much each agent cares about the decision. Agent 1 has the highest stake. The planner wants the outcome to align with high-stake agents' preferences.</p>
       <div id="stakes-panel"></div>
     </section>
 
@@ -807,6 +810,7 @@ footer {
       </div>
 
       <div class="tab-content active" id="dist-symmetric">
+        <p class="hint">p is the probability each agent independently favours outcome 1. ρ (rho) controls correlation: ρ=0 means fully independent opinions, ρ=1 means all agents always agree.</p>
         <div class="dist-control">
           <div class="label-row"><span>Marginal P[Xᵢ=1]&nbsp;&nbsp;(p)</span><span class="value" id="p-val">0.50</span></div>
           <input type="range" id="p-slider" min="0.01" max="0.99" step="0.01" value="0.5">
@@ -819,7 +823,7 @@ footer {
       </div>
 
       <div class="tab-content" id="dist-custom">
-        <p class="hint">Each atom is a 5-bit opinion profile. Toggle bits, drag weight, or add/remove rows. Probabilities are weight/total, then mixed with uniform noise to ensure full support.</p>
+        <p class="hint">Each row is a possible opinion profile — a combination of 1s and 0s for each of the 5 agents. Toggle bits to set who votes 1. The weight controls how often this profile occurs. A small uniform noise ensures every profile has positive probability (<span class="tip" title="every possible opinion combination has strictly positive probability — needed so welfare comparisons are never vacuous">full support</span>).</p>
         <div class="atoms-list" id="atoms-list"></div>
         <button class="add-atom" id="add-atom">+ add outcome</button>
         <div class="dist-control" style="margin-top: 14px;">
@@ -832,7 +836,8 @@ footer {
 
   <main>
     <section class="card">
-      <h2>Expected welfare across all 16 odd franchises <span class="meta">click/hover a bar for per-agent details</span></h2>
+      <h2>Expected welfare across all 16 odd franchises <span class="meta">16 possible committees — click/hover for details</span></h2>
+      <p class="hint">Each bar is one odd-size voting committee (1, 3, or 5 members out of 5 agents). Height = <span class="tip" title="sum of stakes of agents who agree with the committee's decision, averaged over all opinion profiles">expected welfare</span>. ★ = the best committee. The dashed lines show the best <span class="tip" title="always pick outcome 0 or always 1, ignoring all votes">constant dictatorship</span> — if it reaches the bars, conjecture 1 fails.</p>
       <div id="ranking-chart"></div>
       <div class="legend">
         <span title="Every insider has strictly higher stake than every outsider."><span class="swatch" style="background: var(--success);"></span>strict high-stake</span>
@@ -846,6 +851,7 @@ footer {
     <div class="results-grid">
       <section class="card">
         <h2>Per-agent decomposition</h2>
+        <p class="hint">For the highlighted committee, each agent's contribution to expected welfare. The Δ column compares to the runner-up committee (or the best dictatorship when C1 fails).</p>
         <div class="decomp-meta" id="decomp-franchise"></div>
         <table class="decomp-table" id="decomp-table"></table>
       </section>
@@ -864,12 +870,14 @@ footer {
   <div class="diagnostics-grid">
     <section>
       <h2>Scenario contributions <span class="meta" id="scenario-meta"></span></h2>
+      <p class="hint">Each row is one of the 2⁵=32 possible opinion profiles, sorted by probability. "Selected" and "comp." show each rule's weighted welfare in that state. Rows where the two rules produce a different outcome (different Y) are what drive the total welfare difference.</p>
       <div class="table-scroll">
         <table class="diagnostic-table" id="scenario-table"></table>
       </div>
     </section>
     <section>
       <h2>Swap diagnostic <span class="meta" id="swap-meta"></span></h2>
+      <p class="hint">What if we replaced one committee member with an outsider, keeping committee size the same? Each cell shows the welfare change. <span style="color:var(--success)">Green</span> = improvement. <span style="color:var(--danger)">Red</span> = worse. An <span style="color:var(--accent)">orange border</span> marks a counterintuitive swap: the outsider has <em>higher</em> stake than the insider, yet swapping hurts welfare — this is the proxy effect (see CE2).</p>
       <div id="swap-matrix"></div>
     </section>
   </div>
@@ -877,6 +885,7 @@ footer {
 
 <section class="card">
   <h2>Phase diagram <span class="meta" id="phase-meta">counterexample sweeps</span></h2>
+  <p class="hint">Each pixel is a different opinion distribution. Colors show which conjectures hold. <strong>Drag inside the diagram</strong> to load that distribution into the explorer above.</p>
   <div class="segmented" id="phase-family" role="group" aria-label="Phase family">
     <button data-phase="dictatorship" class="active">Dictatorship failure</button>
     <button data-phase="highstake">High-stake failure</button>
@@ -1267,8 +1276,8 @@ const PRESETS = {
     symmetric: { p: 0.5, rho: 0 }
   },
   'ce1': {
-    name: 'CE1',
-    note: 'CE1: bias/correlation let constant q=1 beat every franchise.',
+    name: 'CE1: dictatorship wins',
+    note: 'Counterexample 1: opinions are so biased toward outcome 1 that the constant "always say 1" rule beats every voting committee — conjecture 1 fails.',
     stakes: [17, 8, 7, 4, 1],
     distMode: 'custom',
     custom: {
@@ -1288,8 +1297,8 @@ const PRESETS = {
     }
   },
   'ce2': {
-    name: 'CE2',
-    note: 'CE2: lower-stake insider works as a proxy for high-stake outsiders.',
+    name: 'CE2: proxy effect',
+    note: 'Counterexample 2: a lower-stake agent\'s vote reliably tracks the high-stake agents outside the committee, making her more valuable than a higher-stake agent whose opinion is already known — conjecture 2 fails.',
     stakes: [5, 4, 3, 2, 1],
     distMode: 'custom',
     custom: {
@@ -1307,31 +1316,31 @@ const PHASE_MODES = {
   dictatorship: {
     label: 'Dictatorship failure',
     meta: 'CE1 stakes · mixture/noise sweep',
-    hint: 'Sweep from balanced iid to the CE1 sparse distribution. The vertical axis is ε: the share replaced by the uniform distribution over all 32 opinion profiles to guarantee full support.',
-    note: 'This is the counterexample-relevant view for C1. Non-green cells mark where the best constant rule beats every majority franchise; many are purple because C2 fails there too.',
+    hint: 'Horizontal: interpolate from balanced iid (left) toward the CE1 counterexample distribution (right). Vertical: ε is the fraction of probability mass replaced by the uniform distribution over all 32 profiles (guarantees full support). Yellow/purple cells are where a constant "always say 1" rule beats every voting committee — the failure region for conjecture 1. Drag inside to load a cell.',
+    note: 'Non-green cells mark where the best constant rule beats every majority franchise; many are purple because C2 fails there too.',
     preset: 'ce1',
-    xLabel: 'CE1 approach (balanced → CE1)',
-    yLabel: 'uniform profile share ε',
+    xLabel: 'balanced iid → CE1 distribution',
+    yLabel: 'full-support noise ε',
     yMax: 0.001,
     focusPower: 5
   },
   highstake: {
     label: 'High-stake failure',
     meta: 'CE2 stakes · mixture/noise sweep',
-    hint: 'Sweep from balanced iid to the CE2 sparse distribution. The vertical axis is ε: the share replaced by the uniform distribution over all 32 opinion profiles to guarantee full support.',
-    note: 'This isolates the C2 proxy effect: the non-high-stake optimum survives over a visible region near CE2.',
+    hint: 'Horizontal: interpolate from balanced iid (left) toward the CE2 counterexample distribution (right). Vertical: ε is the fraction replaced by the uniform distribution. Red/purple cells are where the optimal committee excludes a higher-stake agent in favour of a lower-stake one — the proxy effect. Drag inside to load a cell.',
+    note: 'The red band shows where the optimal committee excludes a higher-stake agent because that agent\'s vote conveys no extra information (the proxy effect from CE2).',
     preset: 'ce2',
-    xLabel: 'mixture toward CE2',
-    yLabel: 'uniform profile share ε',
+    xLabel: 'balanced iid → CE2 distribution',
+    yLabel: 'full-support noise ε',
     yMax: 0.05
   },
   symmetric: {
     label: 'Symmetric slice',
     meta: 'symmetric model · current stakes',
-    hint: 'The original exchangeable (p, ρ) slice is labelled theorem-safe: it is expected to be mostly green. Drag inside to set (p, ρ); the marker follows the current symmetric setting.',
-    note: 'This slice may be entirely green. That is the point of keeping it: the exchangeable symmetry removes the asymmetric sparse structures that drive CE1 and CE2.',
-    xLabel: 'p (marginal)',
-    yLabel: 'ρ (correlation)',
+    hint: 'Sweep the (p, ρ) exchangeable model: p is the probability each agent independently favours outcome 1; ρ is pairwise correlation. This slice is expected to be entirely green — the symmetry assumptions rule out both failure modes. Drag inside to set (p, ρ).',
+    note: 'This slice may be entirely green. The exchangeable symmetry removes the asymmetric sparse structures that drive CE1 and CE2.',
+    xLabel: 'p (marginal probability of 1)',
+    yLabel: 'ρ (pairwise correlation)',
     yMax: 0.99
   }
 };
@@ -1725,7 +1734,7 @@ function renderDecomp() {
 
   const table = document.getElementById('decomp-table');
   const inSet = new Set(f.members);
-  let html = '<thead><tr><th class="left">agent</th><th>in C?</th><th>Δᵢ</th><th>P[Xᵢ=Y]</th><th>Δᵢ·P</th><th>Δ vs comp.</th></tr></thead><tbody>';
+  let html = '<thead><tr><th class="left">agent</th><th title="is this agent on the voting committee?">in C?</th><th title="this agent\'s stake — how much they gain when the decision matches their preference">Δᵢ</th><th title="probability this agent\'s preference matches the committee\'s decision">P[Xᵢ=Y]</th><th title="stake × success probability = this agent\'s welfare contribution">Δᵢ·P</th><th title="welfare difference versus the comparator rule (runner-up committee or best dictatorship)">Δ vs comp.</th></tr></thead><tbody>';
   let total = 0;
   let totalDelta = 0;
   for (let i = 0; i < N; i++) {
@@ -1768,8 +1777,8 @@ function renderInsights() {
 
   if (optHs) {
     out.push(`<div class="insight ok">
-      <strong><span class="tip" title="C2: an optimal franchise should be high-stake.">Conjecture 2</span> ✓</strong>
-      Optimum is high-stake: every insider has stake ≥ every outsider.
+      <strong><span class="tip" title="C2: an optimal franchise should be high-stake — the top-k agents by stake should be enfranchised.">Conjecture 2</span> ✓ — best committee is high-stake</strong>
+      Optimum is <span class="tip" title="every insider has stake ≥ every outsider">high-stake</span>: every insider has stake ≥ every outsider.
     </div>`);
   } else {
     const v = findHighStakeViolation(opt, state.stakes);
@@ -1777,21 +1786,21 @@ function renderInsights() {
       ? ` Agent ${v.in+1} (Δ=<span class="num">${state.stakes[v.in].toFixed(1)}</span>) is in C*, but excluded agent ${v.out+1} (Δ=<span class="num">${state.stakes[v.out].toFixed(1)}</span>) has higher stake.`
       : '';
     out.push(`<div class="insight bad">
-      <strong><span class="tip" title="C2: an optimal franchise should be high-stake.">Conjecture 2</span> ✗ violated</strong>
-      Optimum is NOT high-stake.${vmsg}
+      <strong><span class="tip" title="C2: an optimal franchise should be high-stake — the top-k agents by stake should be enfranchised.">Conjecture 2</span> ✗ — lower-stake agent included</strong>
+      Optimum is NOT <span class="tip" title="every insider has stake ≥ every outsider">high-stake</span>: a higher-stake agent is excluded in favour of a lower-stake one.${vmsg}
     </div>`);
   }
 
   if (!analysis.c1Fails) {
     const margin = bestW - bd.welfare;
     out.push(`<div class="insight ok">
-      <strong><span class="tip" title="C1: some majority franchise should weakly beat any constant dictatorship.">Conjecture 1</span> ✓</strong>
+      <strong><span class="tip" title="C1: some majority franchise should weakly beat any constant dictatorship — voting should never be worse than the planner just picking an outcome.">Conjecture 1</span> ✓ — voting beats dictatorship</strong>
       Best franchise (<span class="num">${bestW.toFixed(3)}</span>) ≥ best constant dictatorship q=${bd.q} (<span class="num">${bd.welfare.toFixed(3)}</span>); margin <span class="num">${margin.toFixed(3)}</span>.
     </div>`);
   } else {
     const gap = bd.welfare - bestW;
     out.push(`<div class="insight bad">
-      <strong><span class="tip" title="C1: some majority franchise should weakly beat any constant dictatorship.">Conjecture 1</span> ✗ violated</strong>
+      <strong><span class="tip" title="C1: some majority franchise should weakly beat any constant dictatorship — voting should never be worse than the planner just picking an outcome.">Conjecture 1</span> ✗ — dictatorship wins</strong>
       Constant dictatorship q=${bd.q} (<span class="num">${bd.welfare.toFixed(3)}</span>) beats every franchise; best franchise loses by <span class="num">${gap.toFixed(3)}</span>.
     </div>`);
   }
