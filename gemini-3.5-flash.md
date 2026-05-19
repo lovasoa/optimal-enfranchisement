@@ -21,7 +21,7 @@ The difference in aggregate welfare between choosing $Z=1$ versus $Z=0$ for any 
 $$D(x) = \sum_{i=1}^4 \Delta_i(2x_i - 1) = 3(2x_1 - 1) + 3(2x_2 - 1) + 3(2x_3 - 1) + 5(2x_4 - 1)$$
 
 
-*If $D(x) > 0$, the socially optimal decision is $Z=1$. If $D(x) < 0$, it is $Z=0$.*
+If $D(x) > 0$, the socially optimal decision is $Z=1$. If $D(x) < 0$, it is $Z=0$.
 
 Now, define the *ex ante* joint probability distribution $P$ of opinions to satisfy the **Uncertainty on opinions** assumption (full support), while concentrating $96\%$ of the probability mass on the following four states:
 
